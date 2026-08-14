@@ -104,7 +104,7 @@ function h(fn){
   return (req, res, next) => {
     Promise.resolve(fn(req, res, next)).catch(err => {
       console.error(err);
-      res.status(500).json({ error:"Server error" });
+      res.status(500).json({ error: err.message || "Server error" });
     });
   };
 }
@@ -408,6 +408,13 @@ function placesTextSearch(encodedQuery){
       r.on("end", () => {
         try{
           const parsed = JSON.parse(data);
+          // Google returns HTTP 200 even on auth/billing failures — the real
+          // outcome is in `status`. Only OK and ZERO_RESULTS mean "the request
+          // worked"; anything else is a config problem worth surfacing.
+          if(parsed.status && parsed.status !== "OK" && parsed.status !== "ZERO_RESULTS"){
+            reject(new Error(`Google Places returned ${parsed.status}${parsed.error_message ? ": " + parsed.error_message : ""}`));
+            return;
+          }
           resolve(parsed.results || []);
         }catch(e){ reject(e); }
       });
