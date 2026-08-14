@@ -123,6 +123,38 @@
     color:#6FA6A2;
     letter-spacing:0.06em;
   }
+  /* ---------- SEARCH INPUT (boarding screen + island picker popups) ---------- */
+  .search-input{
+    width:100%; padding:11px 14px; border-radius:8px; border:1px solid var(--line);
+    font-family:'Work Sans', sans-serif; font-size:14px; background:var(--white); color:var(--charcoal);
+  }
+  .search-input.dark{
+    background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.25); color:var(--white);
+  }
+  .search-input.dark::placeholder{ color:#9FC7C3; }
+  .atoll-heading{
+    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase;
+    color:#7FCFCB; padding:14px 2px 6px;
+  }
+  .flap-atoll{ display:block; font-family:'IBM Plex Mono', monospace; font-size:9px; color:#6FA6A2; margin-top:2px; letter-spacing:0.04em; }
+  .board-empty{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:#6FA6A2; padding:20px 4px; }
+  /* island picker popup (used from form fields — search + atoll-grouped list) */
+  .picker-group{ margin-bottom:4px; }
+  .picker-atoll-heading{
+    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--teal); padding:12px 4px 4px;
+  }
+  .picker-row{
+    display:flex; justify-content:space-between; align-items:center; padding:11px 8px;
+    border-bottom:1px solid var(--line); cursor:pointer; font-family:'Work Sans', sans-serif; font-size:14px;
+  }
+  .picker-row:hover{ background:var(--sand-2); }
+  .picker-atoll{ font-family:'IBM Plex Mono', monospace; font-size:10px; color:#9aa39e; }
+  .field-btn{
+    width:100%; text-align:left; padding:11px 12px; border-radius:8px; border:1px solid var(--line);
+    font-family:'Work Sans', sans-serif; font-size:14px; background:var(--white); color:var(--charcoal); cursor:pointer;
+  }
+  .field-btn.placeholder{ color:#9aa39e; }
   /* ---------- TOP BAR ---------- */
   .topbar{
     display:flex;
@@ -352,6 +384,7 @@
     </div>
     <div class="board-area">
       <div class="board-col">
+        <input type="text" id="boardSearchInput" class="search-input dark" placeholder="Search islands…" style="margin-bottom:10px;">
         <div class="board" id="boardList"></div>
       </div>
       <div class="map-col">
@@ -427,7 +460,7 @@
           <div style="margin-top:24px; border-top:1px solid var(--line); padding-top:16px;">
             <div class="section-label">Post an event</div>
             <div class="field"><label>Event title</label><input id="e-title" placeholder="Full Moon Beach BBQ"></div>
-            <div class="field"><label>Island</label><select id="e-island"></select></div>
+            <div class="field"><label>Island</label><button type="button" class="field-btn placeholder" id="e-island-btn" data-island="">Choose island…</button></div>
             <div class="field"><label>Date</label><input id="e-date" placeholder="e.g. 22 Aug, 7pm"></div>
             <div class="field"><label>Details</label><textarea id="e-desc" placeholder="Who it's for, cost, where to meet"></textarea></div>
             <button class="btn-block" id="saveEvent">Post event</button>
@@ -449,7 +482,34 @@
 
 <script>
 (function(){
-  const ISLANDS = ["Maafushi","Guraidhoo","Thulusdhoo","Ukulhas","Rasdhoo","Dhigurah","Dhangethi","Fulidhoo","Hulhumalé","Gulhi","Himmafushi","Male'"];
+  const ATOLLS = [
+    {atoll:"Haa Alif Atoll", islands:["Dhiddhoo","Baarah","Filladhoo","Hoarafushi","Ihavandhoo","Kelaa","Maarandhoo","Muraidhoo","Thakandhoo","Utheemu","Vashafaru"]},
+    {atoll:"Haa Dhaalu Atoll", islands:["Kulhudhuffushi","Finey","Hanimaadhoo","Hirimaradhoo","Kunbifulhu","Kurinbi","Makunudhoo","Naivaadhoo","Nellaidhoo","Neykurendhoo","Nolhivaram","Nolhivaranfaru","Kumundhoo","Faridhoo"]},
+    {atoll:"Shaviyani Atoll", islands:["Funadhoo","Bileffahi","Feevah","Feydhoo","Foakaidhoo","Kanditheemu","Komandoo","Lhaimagu","Maroshi","Milandhoo","Narudhoo","Noomaraa"]},
+    {atoll:"Noonu Atoll", islands:["Manadhoo","Fohdhoo","Henbadhoo","Holhudhoo","Kendhikolhudhoo","Kudafari","Landhoo","Lhohi","Maafaru","Maalhendhoo","Miladhoo","Magoodhoo"]},
+    {atoll:"Raa Atoll", islands:["Ungoofaaru","Alifushi","Angolhitheem","Fainu","Hulhudhufaaru","Inguraidhoo","Inemaura","Kandholhudhoo","Maakurathu","Maduvvari","Meedhoo","Rasmaadhoo","Rasgetheemu","Vaadhoo"]},
+    {atoll:"Baa Atoll", islands:["Eydhafushi","Dharavandhoo","Dhonfanu","Feridhoo","Fulhadhoo","Goidhoo","Hithaadhoo","Kamadhoo","Kendhoo","Kihaadhoo","Kudarikilu","Maalhos","Thulhaadhoo"]},
+    {atoll:"Lhaviyani Atoll", islands:["Naifaru","Hinnavaru","Kurendhoo","Olhuvelifushi","Maafilaafushi"]},
+    {atoll:"Kaafu Atoll", islands:["Male'","Hulhumalé","Dhiffushi","Gulhi","Guraidhoo","Himmafushi","Huraa","Kaashidhoo","Maafushi","Thulusdhoo"]},
+    {atoll:"Alifu Alifu Atoll", islands:["Rasdhoo","Bodufulhadhoo","Feridhoo","Himandhoo","Maalhoss","Mathiveri","Thoddoo","Ukulhas"]},
+    {atoll:"Alifu Dhaalu Atoll", islands:["Mahibadhoo","Dhangethi","Dhigurah","Fenfushi","Hangnaameedhoo","Kunburudhoo","Migaahdhigoo","Maamigili","Omadhoo"]},
+    {atoll:"Vaavu Atoll", islands:["Felidhoo","Fulidhoo","Keyodhoo","Rakeedhoo","Thinadhoo"]},
+    {atoll:"Meemu Atoll", islands:["Muli","Dhiggaru","Kolhufushi","Maduvvari","Mulah","Naalaafushi","Veyvah"]},
+    {atoll:"Faafu Atoll", islands:["Nilandhoo","Bileddhoo","Dharanboodhoo","Magoodhoo","Feeali"]},
+    {atoll:"Dhaalu Atoll", islands:["Kudahuvadhoo","Bandidhoo","Gemendhoo","Hulhudheli","Meedhoo","Rinbudhoo"]},
+    {atoll:"Thaa Atoll", islands:["Veymandoo","Buruni","Dhiyamigili","Gaadhiffushi","Guraidhoo","Hirilandhoo","Kandoodhoo","Kinbidhoo","Madifushi","Omadhoo","Thimarafushi","Vandhoo","Dandhoo"]},
+    {atoll:"Laamu Atoll", islands:["Fonadhoo","Gan","Isdhoo","Kalaidhoo","Kunahandhoo","Maabaidhoo","Maamendhoo","Maavah","Mundoo","Hithadhoo"]},
+    {atoll:"Gaafu Alif Atoll", islands:["Vilingili","Dhaandhoo","Devvadhoo","Gemanafushi","Kandhuhulhudhoo","Kolamaafushi","Maamendhoo","Nilandhoo"]},
+    {atoll:"Gaafu Dhaalu Atoll", islands:["Thinadhoo","Faresmaathoda","Fiyoari","Gadhdhoo","Hoadhedhdhoo","Madaveli","Nadallaa","Rathafandhoo","Vaadhoo"]},
+    {atoll:"Gnaviyani Atoll", islands:["Fuvahmulah"]},
+    {atoll:"Seenu Atoll", islands:["Hithadhoo","Feydhoo","Hulhudhoo","Maradhoo","Maradhoofeydhoo","Meedhoo"]}
+  ];
+  const ISLANDS = ATOLLS.reduce((acc,a)=>acc.concat(a.islands), []);
+  // Some island names repeat across different atolls (a real feature of Maldives
+  // geography, e.g. "Meedhoo" exists in three atolls) — the picker shows the
+  // atoll name alongside each result so these are distinguishable when choosing,
+  // but a business's stored `island` field is just the plain name, so two
+  // same-named islands in different atolls currently share one listings page.
   const CATEGORIES = ["Guesthouses","Hotels & Resorts","Cafés & Restaurants","Excursions & Dive","Shops & Rentals","Attractions & Activities"];
   const STATUS_WORDS = ["ON TIME","BOARDING","READY","OPEN"];
 
@@ -637,13 +697,26 @@
   }
 
   // ---------- boarding screen ----------
-  function renderBoard(){
+  function renderBoard(filterText){
+    const filter = (filterText || '').trim().toLowerCase();
     const el = document.getElementById('boardList');
-    el.innerHTML = ISLANDS.map((isl,i)=>`
-      <div class="board-row" data-island="${isl}">
-        <span class="flap">${isl.toUpperCase()}</span>
-        <span class="status" style="--d:${i}">${STATUS_WORDS[i % STATUS_WORDS.length]}</span>
-      </div>`).join('');
+    if(filter){
+      const matches = [];
+      ATOLLS.forEach(a => a.islands.forEach(isl => { if(isl.toLowerCase().includes(filter)) matches.push({isl, atoll:a.atoll}); }));
+      el.innerHTML = matches.length ? matches.map((m,i)=>`
+        <div class="board-row" data-island="${escapeAttr(m.isl)}">
+          <span class="flap">${escapeHtml(m.isl.toUpperCase())}<span class="flap-atoll">${escapeHtml(m.atoll)}</span></span>
+          <span class="status" style="--d:${i}">${STATUS_WORDS[i % STATUS_WORDS.length]}</span>
+        </div>`).join('') : `<div class="board-empty">No islands match "${escapeHtml(filterText)}"</div>`;
+    } else {
+      el.innerHTML = ATOLLS.map(a => `
+        <div class="atoll-heading">${escapeHtml(a.atoll)}</div>
+        ${a.islands.map((isl,i)=>`
+          <div class="board-row" data-island="${escapeAttr(isl)}">
+            <span class="flap">${escapeHtml(isl.toUpperCase())}</span>
+            <span class="status" style="--d:${i}">${STATUS_WORDS[i % STATUS_WORDS.length]}</span>
+          </div>`).join('')}`).join('');
+    }
     el.querySelectorAll('.board-row').forEach(row=>{
       row.addEventListener('click', ()=>chooseIsland(row.getAttribute('data-island')));
     });
@@ -669,8 +742,45 @@
     enterApp();
   }
 
-  function populateSelects(){
-    document.getElementById('e-island').innerHTML = ISLANDS.map(i=>`<option value="${i}">${i}</option>`).join('');
+  // ---------- reusable island picker popup (search + atoll grouping) ----------
+  // Used anywhere a form needs one island — never a native <select>.
+  function renderPickerList(container, filterText, onSelect){
+    const filter = (filterText || '').trim().toLowerCase();
+    if(filter){
+      const matches = [];
+      ATOLLS.forEach(a => a.islands.forEach(isl => { if(isl.toLowerCase().includes(filter)) matches.push({isl, atoll:a.atoll}); }));
+      container.innerHTML = matches.length ? matches.map(m => `
+        <div class="picker-row" data-island="${escapeAttr(m.isl)}"><span>${escapeHtml(m.isl)}</span><span class="picker-atoll">${escapeHtml(m.atoll)}</span></div>
+      `).join('') : `<div class="empty">No islands match "${escapeHtml(filterText)}"</div>`;
+    } else {
+      container.innerHTML = ATOLLS.map(a => `
+        <div class="picker-group">
+          <div class="picker-atoll-heading">${escapeHtml(a.atoll)}</div>
+          ${a.islands.map(isl => `<div class="picker-row" data-island="${escapeAttr(isl)}"><span>${escapeHtml(isl)}</span></div>`).join('')}
+        </div>`).join('');
+    }
+    container.querySelectorAll('.picker-row').forEach(row => {
+      row.addEventListener('click', () => onSelect(row.getAttribute('data-island')));
+    });
+  }
+
+  function openIslandPicker(onSelect){
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.innerHTML = sheetShell({
+      closeId: 'islandPickerClose', eyebrow: 'Select island', title: 'Choose an island',
+      body: `<input type="text" id="islandPickerSearch" class="search-input" placeholder="Search islands…" style="margin-bottom:12px;">
+             <div id="islandPickerResults" style="max-height:52vh; overflow-y:auto;"></div>`
+    });
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.remove(); });
+    document.getElementById('islandPickerClose').addEventListener('click', ()=>overlay.remove());
+    const resultsEl = document.getElementById('islandPickerResults');
+    const searchEl = document.getElementById('islandPickerSearch');
+    function refresh(){ renderPickerList(resultsEl, searchEl.value, (isl)=>{ overlay.remove(); onSelect(isl); }); }
+    searchEl.addEventListener('input', refresh);
+    refresh();
+    searchEl.focus();
   }
 
   function renderChips(){
@@ -877,13 +987,14 @@
   function openAddListingForm(acct){
     const overlay = document.createElement('div');
     overlay.className = 'overlay';
+    const defaultIsland = state.island || '';
     overlay.innerHTML = sheetShell({
       closeId: 'addClose', eyebrow: 'Business Portal', title: 'Add a business',
       subline: `${acct.listingCount}/${acct.listingLimit} listings used`,
       body: `
         <div class="field"><label>Business name</label><input id="f-name" placeholder="Ocean Breeze Guesthouse"></div>
         <div class="field"><label>Category</label><select id="f-cat"></select></div>
-        <div class="field"><label>Island</label><select id="f-island"></select></div>
+        <div class="field"><label>Island</label><button type="button" class="field-btn ${defaultIsland ? '' : 'placeholder'}" id="f-island-btn" data-island="${escapeAttr(defaultIsland)}">${defaultIsland ? escapeHtml(defaultIsland) : 'Choose island…'}</button></div>
         <div class="field"><label>Description</label><textarea id="f-desc" placeholder="What makes your place worth a stop?"></textarea></div>
         <div class="field"><label>Price range (optional)</label><input id="f-price" placeholder="e.g. $25–40/night"></div>
         <div class="field"><label>Contact (phone or WhatsApp)</label><input id="f-contact" placeholder="+960 7xx xxxx"></div>
@@ -891,14 +1002,23 @@
     });
     document.body.appendChild(overlay);
     document.getElementById('f-cat').innerHTML = CATEGORIES.map(c=>`<option value="${c}">${c}</option>`).join('');
-    document.getElementById('f-island').innerHTML = ISLANDS.map(i=>`<option value="${i}">${i}</option>`).join('');
     overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.remove(); });
     document.getElementById('addClose').addEventListener('click', ()=>overlay.remove());
+    document.getElementById('f-island-btn').addEventListener('click', ()=>{
+      openIslandPicker((isl)=>{
+        const btn = document.getElementById('f-island-btn');
+        btn.textContent = isl;
+        btn.setAttribute('data-island', isl);
+        btn.classList.remove('placeholder');
+      });
+    });
     document.getElementById('saveListing').addEventListener('click', async ()=>{
       const name = document.getElementById('f-name').value.trim();
+      const island = document.getElementById('f-island-btn').getAttribute('data-island');
       if(!name){ toast("Business name is required"); return; }
+      if(!island){ toast("Choose an island"); return; }
       const body = {
-        name, category: document.getElementById('f-cat').value, island: document.getElementById('f-island').value,
+        name, category: document.getElementById('f-cat').value, island,
         desc: document.getElementById('f-desc').value.trim(), price: document.getElementById('f-price').value.trim(),
         contact: document.getElementById('f-contact').value.trim()
       };
@@ -913,27 +1033,36 @@
   function openClaimSheet(acct){
     const overlay = document.createElement('div');
     overlay.className = 'overlay';
+    const defaultIsland = state.island || '';
     overlay.innerHTML = sheetShell({
       closeId: 'claimClose', eyebrow: 'Business Portal', title: 'Claim your listing',
       subline: 'Public listings found on Google — claim yours instead of creating a duplicate',
       body: `
-        <div class="field"><label>Island</label><select id="claim-island"></select></div>
+        <div class="field"><label>Island</label><button type="button" class="field-btn ${defaultIsland ? '' : 'placeholder'}" id="claim-island-btn" data-island="${escapeAttr(defaultIsland)}">${defaultIsland ? escapeHtml(defaultIsland) : 'Choose island…'}</button></div>
         <div class="field"><label>Search by name (optional)</label><input id="claim-q" placeholder="Start typing your business name"></div>
         <div id="claimResults" style="margin-top:6px;"></div>`
     });
     document.body.appendChild(overlay);
     overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.remove(); });
     document.getElementById('claimClose').addEventListener('click', ()=>overlay.remove());
-    const islandSel = document.getElementById('claim-island');
-    islandSel.innerHTML = ISLANDS.map(i=>`<option value="${i}">${i}</option>`).join('');
-    if(state.island) islandSel.value = state.island;
+    const islandBtn = document.getElementById('claim-island-btn');
+    islandBtn.addEventListener('click', ()=>{
+      openIslandPicker((isl)=>{
+        islandBtn.textContent = isl;
+        islandBtn.setAttribute('data-island', isl);
+        islandBtn.classList.remove('placeholder');
+        loadResults();
+      });
+    });
 
     async function loadResults(){
-      const qs = new URLSearchParams({ island: islandSel.value });
+      const island = islandBtn.getAttribute('data-island');
+      const wrap = document.getElementById('claimResults');
+      if(!island){ wrap.innerHTML = `<div class="empty">Choose an island to see unclaimed public listings there.</div>`; return; }
+      const qs = new URLSearchParams({ island });
       const q = document.getElementById('claim-q').value.trim();
       if(q) qs.set('q', q);
       const r = await api('/api/unclaimed?' + qs.toString());
-      const wrap = document.getElementById('claimResults');
       if(!r.ok){ wrap.innerHTML = `<div class="empty">${escapeHtml(r.error)}</div>`; return; }
       if(!r.data.length){ wrap.innerHTML = `<div class="empty">No unclaimed public listings found here. You can add a new one instead.</div>`; return; }
       wrap.innerHTML = r.data.map(b => `
@@ -951,7 +1080,6 @@
         });
       });
     }
-    islandSel.addEventListener('change', loadResults);
     document.getElementById('claim-q').addEventListener('input', loadResults);
     loadResults();
   }
@@ -1016,6 +1144,7 @@
   function wire(){
     document.getElementById('langBtnBoard').addEventListener('click', openLangModal);
     document.getElementById('langBtnTop').addEventListener('click', openLangModal);
+    document.getElementById('boardSearchInput').addEventListener('input', (e)=>renderBoard(e.target.value));
     document.getElementById('switchIsleBtn').addEventListener('click', ()=>{
       document.getElementById('mainApp').classList.add('hidden');
       document.getElementById('boarding').classList.remove('hidden');
@@ -1045,13 +1174,25 @@
       lsSet('ii-biz-token', null); lsSet('ii-biz-email', null);
       refreshPortal();
     });
+    document.getElementById('e-island-btn').addEventListener('click', ()=>{
+      openIslandPicker((isl)=>{
+        const btn = document.getElementById('e-island-btn');
+        btn.textContent = isl;
+        btn.setAttribute('data-island', isl);
+        btn.classList.remove('placeholder');
+      });
+    });
     document.getElementById('saveEvent').addEventListener('click', async ()=>{
       const title = document.getElementById('e-title').value.trim();
+      const island = document.getElementById('e-island-btn').getAttribute('data-island');
       if(!title){ toast("Event title is required"); return; }
-      const body = { title, island: document.getElementById('e-island').value, date: document.getElementById('e-date').value.trim(), desc: document.getElementById('e-desc').value.trim() };
+      if(!island){ toast("Choose an island"); return; }
+      const body = { title, island, date: document.getElementById('e-date').value.trim(), desc: document.getElementById('e-desc').value.trim() };
       const r = await api('/api/events', { method:'POST', body });
       if(!r.ok){ toast(r.error); return; }
       ['e-title','e-date','e-desc'].forEach(id=>document.getElementById(id).value='');
+      const btn = document.getElementById('e-island-btn');
+      btn.textContent = 'Choose island…'; btn.setAttribute('data-island',''); btn.classList.add('placeholder');
       toast("Event posted");
     });
   }
@@ -1081,7 +1222,6 @@
     state.bizToken = lsGet('ii-biz-token', null);
     state.bizEmail = lsGet('ii-biz-email', null);
     renderBoard();
-    populateSelects();
     wire();
     applyStaticText();
     const savedIsland = lsGet('ii-island', null);
