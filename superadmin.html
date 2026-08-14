@@ -34,6 +34,8 @@
   .tab{padding:9px 16px; border-radius:20px; border:1px solid var(--line); background:var(--white); font-family:'IBM Plex Mono',monospace; font-size:12px; cursor:pointer;}
   .tab.active{background:var(--ink); color:var(--white); border-color:var(--ink);}
   .tab .count{background:var(--coral); color:var(--white); border-radius:10px; padding:1px 6px; font-size:10px; margin-left:6px;}
+  .section-heading{ font-family:'Instrument Serif', serif; font-size:20px; display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .section-heading .count{background:var(--coral); color:var(--white); border-radius:10px; padding:1px 7px; font-size:11px; font-family:'IBM Plex Mono', monospace;}
   .panel{display:none;}
   .panel.active{display:block;}
   .row-card{background:var(--white); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;}
@@ -121,16 +123,21 @@
   </header>
 
   <div class="tabs">
-    <button class="tab active" data-panel="flags">Duplicate Flags <span class="count" id="flagCount">0</span></button>
+    <button class="tab active" data-panel="flags">Needs Attention <span class="count" id="attentionCount">0</span></button>
     <button class="tab" data-panel="businesses">Businesses</button>
     <button class="tab" data-panel="accounts">Business Accounts</button>
     <button class="tab" data-panel="islands">Islands</button>
   </div>
 
-  <!-- DUPLICATE FLAGS -->
+  <!-- NEEDS ATTENTION (duplicate flags + address mismatches) -->
   <div class="panel active" id="panel-flags">
+    <div class="section-heading">Duplicate Flags <span class="count" id="flagCount">0</span></div>
     <p style="font-size:13px; color:#3a4642; margin-top:0;">Raised automatically whenever a business signs up with a name that matches an existing public (Google-sourced) listing on the same island. Removing the public listing hands the page over to the real owner's listing.</p>
     <div id="flagsList"></div>
+
+    <div class="section-heading" style="margin-top:26px;">Address Mismatches <span class="count" id="mismatchCount">0</span></div>
+    <p style="font-size:13px; color:#3a4642; margin-top:0;">Google-sourced listings whose actual address doesn't mention the island they're filed under — usually a nearby/similar result Google matched to the wrong island during sync. Move each to the right island or remove it.</p>
+    <div id="mismatchList"></div>
   </div>
 
   <!-- BUSINESSES -->
@@ -293,12 +300,19 @@
     });
   });
 
+  function updateAttentionCount(){
+    const flags = parseInt(document.getElementById('flagCount').textContent, 10) || 0;
+    const mismatches = parseInt(document.getElementById('mismatchCount').textContent, 10) || 0;
+    document.getElementById('attentionCount').textContent = flags + mismatches;
+  }
+
   async function loadFlags(){
     const r = await adminApi('/api/admin/duplicate-flags');
     const wrap = document.getElementById('flagsList');
     if(!r.ok){ wrap.innerHTML = `<div class="empty">${escapeHtml(r.error)}</div>`; return; }
     const pending = r.data.filter(f => f.status === 'pending');
     document.getElementById('flagCount').textContent = pending.length;
+    updateAttentionCount();
     if(!pending.length){ wrap.innerHTML = `<div class="empty">No pending flags — nothing to review right now.</div>`; return; }
     wrap.innerHTML = pending.map(f => `
       <div class="row-card">
@@ -315,7 +329,7 @@
     wrap.querySelectorAll('[data-remove]').forEach(btn=>{
       btn.addEventListener('click', async ()=>{
         await adminApi('/api/admin/duplicate-flags/' + btn.getAttribute('data-remove') + '/resolve', { method:'POST', body:{action:'remove'} });
-        loadFlags(); loadBusinesses();
+        loadFlags(); loadBusinesses(); loadMismatches();
       });
     });
     wrap.querySelectorAll('[data-dismiss]').forEach(btn=>{
@@ -330,6 +344,44 @@
     if(!address) return true; // no address to check (owner-listed) — nothing to flag
     const norm = s => s.toLowerCase().replace(/['’]/g, "");
     return norm(address).includes(norm(island));
+  }
+
+  // Same mismatch businesses shown as a badge in the full Businesses list,
+  // but pulled together here under one heading so they're impossible to miss.
+  async function loadMismatches(){
+    const r = await adminApi('/api/admin/businesses');
+    const wrap = document.getElementById('mismatchList');
+    if(!r.ok){ wrap.innerHTML = `<div class="empty">${escapeHtml(r.error)}</div>`; return; }
+    const mismatched = r.data.filter(b => b.source === 'google' && !addressMentionsIsland(b.desc, b.island));
+    document.getElementById('mismatchCount').textContent = mismatched.length;
+    updateAttentionCount();
+    if(!mismatched.length){ wrap.innerHTML = `<div class="empty">No address mismatches right now.</div>`; return; }
+    wrap.innerHTML = mismatched.map(b => `
+      <div class="row-card">
+        <div>
+          <h3>${escapeHtml(b.name)}</h3>
+          <div class="meta">${escapeHtml(b.category)} · filed under ${escapeHtml(b.island)}</div>
+          <div class="sub">${escapeHtml(b.desc || '')}</div>
+        </div>
+        <div class="btns">
+          <button class="btn" data-fix="${b.id}">Fix island</button>
+          <button class="btn danger" data-del="${b.id}">Delete</button>
+        </div>
+      </div>`).join('');
+    wrap.querySelectorAll('[data-fix]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        openIslandPicker(async (isl)=>{
+          await adminApi('/api/admin/businesses/' + btn.getAttribute('data-fix'), { method:'PATCH', body:{island: isl} });
+          loadMismatches(); loadBusinesses();
+        }, { title: 'Move to correct island' });
+      });
+    });
+    wrap.querySelectorAll('[data-del]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        await adminApi('/api/admin/businesses/' + btn.getAttribute('data-del'), { method:'DELETE' });
+        loadMismatches(); loadBusinesses();
+      });
+    });
   }
 
   async function loadBusinesses(){
@@ -508,14 +560,14 @@
       statusEl.textContent = "Syncing…";
       const r = await adminApi('/api/admin/sync-google/' + encodeURIComponent(island) + '?atoll=' + encodeURIComponent(atoll), { method:'POST' });
       statusEl.textContent = r.ok ? `Added ${r.data.added} new listing(s)${r.data.skippedMismatch ? `, skipped ${r.data.skippedMismatch} that didn't actually match this island` : ''}.` : r.error;
-      if(r.ok) loadBusinesses();
+      if(r.ok){ loadBusinesses(); loadMismatches(); }
     });
     document.getElementById('syncAllBtn').addEventListener('click', async ()=>{
       const statusEl = document.getElementById('syncStatus');
       statusEl.textContent = "Syncing every island — this takes a bit longer…";
       const r = await adminApi('/api/admin/sync-google-all', { method:'POST' });
       statusEl.textContent = r.ok ? `Added ${r.data.totalAdded} new listing(s) across all islands${r.data.totalSkippedMismatch ? `, skipped ${r.data.totalSkippedMismatch} that didn't match their island` : ''}.` : r.error;
-      if(r.ok) loadBusinesses();
+      if(r.ok){ loadBusinesses(); loadMismatches(); }
     });
     document.getElementById('clearGoogleBtn').addEventListener('click', async ()=>{
       if(!confirm('Remove every Google-sourced listing and reset the sync history? Owner-listed businesses, accounts, and events are not affected. This is meant to be followed by a fresh "Sync ALL islands" run.')) return;
@@ -523,7 +575,7 @@
       statusEl.textContent = "Clearing previous Google data…";
       const r = await adminApi('/api/admin/google-data/clear', { method:'POST' });
       statusEl.textContent = r.ok ? `Removed ${r.data.removed} Google-sourced listing(s) and cleared the sync cache. Ready for a fresh sync.` : r.error;
-      if(r.ok){ loadBusinesses(); loadFlags(); }
+      if(r.ok){ loadBusinesses(); loadFlags(); loadMismatches(); }
     });
     document.getElementById('backfillContactsBtn').addEventListener('click', async ()=>{
       const statusEl = document.getElementById('syncStatus');
@@ -535,6 +587,7 @@
       if(r.ok) loadBusinesses();
     });
     loadFlags();
+    loadMismatches();
     loadBusinesses();
     loadAccounts();
     loadIslands();
