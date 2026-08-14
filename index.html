@@ -27,7 +27,9 @@
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0;}
   body{
-    background:var(--sand);
+    background-color:var(--sand);
+    background-image: radial-gradient(rgba(31,138,140,0.09) 1.2px, transparent 1.2px);
+    background-size: 20px 20px;
     color:var(--charcoal);
     font-family:'Work Sans', sans-serif;
     min-height:100vh;
@@ -36,7 +38,7 @@
     max-width:480px;
     margin:0 auto;
     min-height:100vh;
-    background:var(--sand);
+    background:transparent;
     position:relative;
     display:flex;
     flex-direction:column;
@@ -138,18 +140,30 @@
     background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.25); color:var(--white);
   }
   .search-input.dark::placeholder{ color:#9FC7C3; }
-  .atoll-heading{
+  .atoll-toggle{
+    width:100%; display:flex; align-items:center; justify-content:space-between;
+    background:transparent; border:none; cursor:pointer; text-align:left;
     font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase;
     color:#7FCFCB; padding:14px 2px 6px;
   }
+  .atoll-toggle .chevron{ font-size:11px; transition:transform 0.2s ease; display:inline-block; }
+  .atoll-toggle.open .chevron{ transform:rotate(90deg); }
+  .atoll-body{ overflow:hidden; max-height:0; transition:max-height 0.25s ease; }
+  .atoll-body.open{ max-height:2000px; }
   .flap-atoll{ display:block; font-family:'IBM Plex Mono', monospace; font-size:9px; color:#6FA6A2; margin-top:2px; letter-spacing:0.04em; }
   .board-empty{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:#6FA6A2; padding:20px 4px; }
   /* island picker popup (used from form fields — search + atoll-grouped list) */
   .picker-group{ margin-bottom:4px; }
-  .picker-atoll-heading{
+  .picker-atoll-toggle{
+    width:100%; display:flex; align-items:center; justify-content:space-between;
+    background:transparent; border:none; cursor:pointer; text-align:left;
     font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase;
     color:var(--teal); padding:12px 4px 4px;
   }
+  .picker-atoll-toggle .chevron{ font-size:11px; transition:transform 0.2s ease; display:inline-block; }
+  .picker-atoll-toggle.open .chevron{ transform:rotate(90deg); }
+  .picker-atoll-body{ overflow:hidden; max-height:0; transition:max-height 0.25s ease; }
+  .picker-atoll-body.open{ max-height:2000px; }
   .picker-row{
     display:flex; justify-content:space-between; align-items:center; padding:11px 8px;
     border-bottom:1px solid var(--line); cursor:pointer; font-family:'Work Sans', sans-serif; font-size:14px;
@@ -235,42 +249,46 @@
   .card{
     background:var(--white);
     border:1px solid var(--line);
-    border-radius:10px;
-    padding:15px;
-    margin-bottom:12px;
+    border-radius:14px;
+    padding:0;
+    margin-bottom:14px;
     cursor:pointer;
+    overflow:hidden;
+    box-shadow:0 1px 3px rgba(11,46,53,0.05);
     animation: cardIn 0.4s ease both;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
-  .card:hover{ transform:translateY(-2px); box-shadow:0 8px 20px rgba(11,46,53,0.08); }
+  .card:hover{ transform:translateY(-3px); box-shadow:0 12px 26px rgba(11,46,53,0.14); }
   @keyframes cardIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
-  .card-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
-  .card-top .title-row{display:flex; align-items:center; gap:8px;}
-  .cat-icon{
-    width:26px; height:26px; border-radius:50%; flex:0 0 auto;
-    display:flex; align-items:center; justify-content:center;
+  .card-band{
+    position:relative; padding:16px 16px 13px; overflow:hidden;
+    background:linear-gradient(135deg, var(--ink), var(--ink-2));
   }
-  .card h3{font-size:20px;}
-  .card .cat{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:10px;
-    letter-spacing:0.06em;
-    text-transform:uppercase;
-    color:var(--teal);
-    margin-top:2px;
-    display:block;
+  .card-band.theme-ocean{ background:linear-gradient(135deg, #0B2E35, #146370); }
+  .card-band.theme-warm{ background:linear-gradient(135deg, #123F47, #4A3626); }
+  .card-band.theme-festive{ background:linear-gradient(135deg, #0B2E35, #6E2A1E); }
+  .card-band .band-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px; position:relative; z-index:1; }
+  .cat-icon-lg{
+    width:34px; height:34px; border-radius:50%; flex:0 0 auto;
+    background:rgba(255,255,255,0.16); display:flex; align-items:center; justify-content:center;
+  }
+  .card-band h3{ color:var(--white); font-size:19px; margin-top:10px; position:relative; z-index:1; }
+  .card-band .cat{
+    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.06em; text-transform:uppercase;
+    color:#9FC7C3; margin-top:2px; display:block; position:relative; z-index:1;
   }
   .verified{
     font-family:'IBM Plex Mono', monospace;
     font-size:9px;
     letter-spacing:0.06em;
-    background:var(--teal-dim);
-    color:var(--teal);
+    background:rgba(255,255,255,0.18);
+    color:var(--white);
     padding:3px 7px;
     border-radius:20px;
     flex:0 0 auto;
   }
-  .card p.desc{font-size:13.5px; line-height:1.5; margin:9px 0 0; color:#3a4642; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;}
+  .card-body{ padding:13px 16px 15px; }
+  .card p.desc{font-size:13.5px; line-height:1.5; margin:0; color:#3a4642; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;}
   .card-foot{display:flex; align-items:center; justify-content:space-between; margin-top:12px; padding-top:12px; border-top:1px dashed var(--line);}
   .price{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--charcoal);}
   .tap-hint{font-family:'IBM Plex Mono', monospace; font-size:10px; color:#9aa39e;}
@@ -393,7 +411,6 @@
     .navbtn.active{padding-top:12px;}
     .sheet{max-width:520px; border-radius:16px; margin-bottom:6vh;}
     .overlay{align-items:center;}
-    #view-portal{max-width:640px;}
   }
 </style>
 </head>
@@ -465,52 +482,12 @@
         <div id="eventsList"></div>
       </div>
 
-      <!-- PORTAL VIEW (English-only, business owners) -->
-      <div id="view-portal" class="hidden">
-
-        <div id="portalSignedOut">
-          <div class="section-label">Business Portal</div>
-          <p style="font-size:13px; line-height:1.6; color:#3a4642; margin-top:0;">
-            List your guesthouse, café, dive shop or excursion so tourists can find you the moment they land. Create a free account to get started — 1 listing free, or go Pro for up to 10.
-          </p>
-          <div class="auth-tabs">
-            <button class="auth-tab active" id="tabSignIn">Sign in</button>
-            <button class="auth-tab" id="tabSignUp">Create account</button>
-          </div>
-          <div class="auth-err hidden" id="authErr"></div>
-          <div class="field"><label>Business email</label><input type="email" id="authEmail" placeholder="you@business.mv"></div>
-          <div class="field"><label>Password</label><input type="password" id="authPass" placeholder="••••••••"></div>
-          <button class="btn-block" id="authSubmit">Sign in</button>
-        </div>
-
-        <div id="portalSignedIn" class="hidden">
-          <div id="acctCard"></div>
-
-          <div class="section-label">
-            <span id="portalWho">Your listings</span>
-            <button class="del-btn" id="portalSignOut">Sign out</button>
-          </div>
-          <div id="myListings"></div>
-          <button class="btn-block" id="showAddForm" style="margin-top:16px;">+ Add a business</button>
-          <button class="btn-ghost" id="showClaimForm" style="width:100%; margin-top:8px;">Claim an existing public listing</button>
-
-          <div style="margin-top:24px; border-top:1px solid var(--line); padding-top:16px;">
-            <div class="section-label">Post an event</div>
-            <div class="field"><label>Event title</label><input id="e-title" placeholder="Full Moon Beach BBQ"></div>
-            <div class="field"><label>Island</label><button type="button" class="field-btn placeholder" id="e-island-btn" data-island="">Choose island…</button></div>
-            <div class="field"><label>Date</label><input id="e-date" placeholder="e.g. 22 Aug, 7pm"></div>
-            <div class="field"><label>Details</label><textarea id="e-desc" placeholder="Who it's for, cost, where to meet"></textarea></div>
-            <button class="btn-block" id="saveEvent">Post event</button>
-          </div>
-        </div>
-      </div>
-
     </div>
 
     <div class="bottomnav">
       <button class="navbtn active" data-view="explore" data-i18n="navExplore">Explore</button>
       <button class="navbtn" data-view="events" data-i18n="navEvents">Events</button>
-      <button class="navbtn" data-view="portal" data-i18n="navPortal">Business Portal</button>
+      <a class="navbtn" href="business.html" data-i18n="navPortal" style="text-decoration:none; display:flex; align-items:center; justify-content:center;">Business Portal</a>
     </div>
   </div>
 
@@ -523,26 +500,26 @@
   // This is only the fallback used if that fetch fails (e.g. API unreachable
   // on first load) so the app still shows something instead of breaking.
   let ATOLLS = [
-    {atoll:"Haa Alif Atoll", islands:["Dhiddhoo","Baarah","Filladhoo","Hoarafushi","Ihavandhoo","Kelaa","Maarandhoo","Muraidhoo","Thakandhoo","Utheemu","Vashafaru"]},
-    {atoll:"Haa Dhaalu Atoll", islands:["Kulhudhuffushi","Finey","Hanimaadhoo","Hirimaradhoo","Kunbifulhu","Kurinbi","Makunudhoo","Naivaadhoo","Nellaidhoo","Neykurendhoo","Nolhivaram","Nolhivaranfaru","Kumundhoo","Faridhoo"]},
-    {atoll:"Shaviyani Atoll", islands:["Funadhoo","Bileffahi","Feevah","Feydhoo","Foakaidhoo","Kanditheemu","Komandoo","Lhaimagu","Maroshi","Milandhoo","Narudhoo","Noomaraa"]},
-    {atoll:"Noonu Atoll", islands:["Manadhoo","Fohdhoo","Henbadhoo","Holhudhoo","Kendhikolhudhoo","Kudafari","Landhoo","Lhohi","Maafaru","Maalhendhoo","Miladhoo","Magoodhoo"]},
-    {atoll:"Raa Atoll", islands:["Ungoofaaru","Alifushi","Angolhitheem","Fainu","Hulhudhufaaru","Inguraidhoo","Inemaura","Kandholhudhoo","Maakurathu","Maduvvari","Meedhoo","Rasmaadhoo","Rasgetheemu","Vaadhoo"]},
-    {atoll:"Baa Atoll", islands:["Eydhafushi","Dharavandhoo","Dhonfanu","Feridhoo","Fulhadhoo","Goidhoo","Hithaadhoo","Kamadhoo","Kendhoo","Kihaadhoo","Kudarikilu","Maalhos","Thulhaadhoo"]},
-    {atoll:"Lhaviyani Atoll", islands:["Naifaru","Hinnavaru","Kurendhoo","Olhuvelifushi","Maafilaafushi"]},
-    {atoll:"Kaafu Atoll", islands:["Male'","Hulhumalé","Dhiffushi","Gulhi","Guraidhoo","Himmafushi","Huraa","Kaashidhoo","Maafushi","Thulusdhoo"]},
-    {atoll:"Alifu Alifu Atoll", islands:["Rasdhoo","Bodufulhadhoo","Feridhoo","Himandhoo","Maalhoss","Mathiveri","Thoddoo","Ukulhas"]},
-    {atoll:"Alifu Dhaalu Atoll", islands:["Mahibadhoo","Dhangethi","Dhigurah","Fenfushi","Hangnaameedhoo","Kunburudhoo","Migaahdhigoo","Maamigili","Omadhoo"]},
+    {atoll:"Haa Alif Atoll", islands:["Baarah","Dhiddhoo","Filladhoo","Hoarafushi","Ihavandhoo","Kelaa","Maarandhoo","Mulhadhoo","Muraidhoo","Thakandhoo","Thuraakunu","Utheemu","Vashafaru","Uligan"]},
+    {atoll:"Haa Dhaalu Atoll", islands:["Finey","Hirilandhoo","Hanimaadhoo","Kattakuredhoo","Kulhudhuffushi","Kumundhoo","Kurinbi","Makunudhoo","Navaidhoo","Nellaidhoo","Neykurendhoo","Nolhivaram","Nolhivaranfaru","Vaikaradhoo"]},
+    {atoll:"Shaviyani Atoll", islands:["Bileffahi","Feevah","Feydhoo","Foakaidhoo","Funadhoo","Goidhoo","Kanditheemu","Komandoo","Lhaimagu","Maaungoodhoo","Narudhoo","Noomaraa","Milandhoo","Maroshi"]},
+    {atoll:"Noonu Atoll", islands:["Foddhoo","Henbadhoo","Holhudhoo","Kendhikulhudhoo","Kudafari","Landhoo","Lhohi","Maalhendhoo","Magoodhoo","Manadhoo","Miladhoo","Velidhoo"]},
+    {atoll:"Raa Atoll", islands:["Alifushi","Angolhitheemu","Fainu","Hulhudhuffaaru","Inguraidhoo","Innamaadhoo","Dhuvaafaru","Kandholhudhoo","Kinnolhas","Maakurathu","Maduvvari","Meedhoo","Rasgetheemu","Rasmadhoo","Ungoofaaru","Vaadhoo"]},
+    {atoll:"Baa Atoll", islands:["Dharavandhoo","Dhonfanu","Eydafushi","Fehendhoo","Fulhadhoo","Goidhoo","Hitheadhoo","Kamadhoo","Kendhoo","Kihaadhoo","Kudarikilu","Maalhos","Thulhaadhoo"]},
+    {atoll:"Lhaviyani Atoll", islands:["Hinnavaru","Kurendhoo","Maafilaafushi","Naifaru","Olhuvelifushi"]},
+    {atoll:"Kaafu Atoll & Malé", islands:["Malé","Villingili","Hulhumalé","Hulhulé","Dhiffushi","Gaafaru","Gulhi","Guraidhoo","Himmafushi","Huraa","Kaashidhoo","Maafushi","Thulusdhoo"]},
+    {atoll:"Alif Alif Atoll", islands:["Bodufolhudhoo","Feridhoo","Himandhoo","Mathiveri","Rasdhoo","Thoddoo","Ukulhas","Maalhos"]},
+    {atoll:"Alif Dhaal Atoll", islands:["Dhigurah","Fenfushi","Hangnaameedhoo","Kunburudhoo","Maamigili","Mahibadhoo","Mandhoo","Omadhoo","Dhangethi","Dhidhdhoo"]},
     {atoll:"Vaavu Atoll", islands:["Felidhoo","Fulidhoo","Keyodhoo","Rakeedhoo","Thinadhoo"]},
-    {atoll:"Meemu Atoll", islands:["Muli","Dhiggaru","Kolhufushi","Maduvvari","Mulah","Naalaafushi","Veyvah"]},
-    {atoll:"Faafu Atoll", islands:["Nilandhoo","Bileddhoo","Dharanboodhoo","Magoodhoo","Feeali"]},
-    {atoll:"Dhaalu Atoll", islands:["Kudahuvadhoo","Bandidhoo","Gemendhoo","Hulhudheli","Meedhoo","Rinbudhoo"]},
-    {atoll:"Thaa Atoll", islands:["Veymandoo","Buruni","Dhiyamigili","Gaadhiffushi","Guraidhoo","Hirilandhoo","Kandoodhoo","Kinbidhoo","Madifushi","Omadhoo","Thimarafushi","Vandhoo","Dandhoo"]},
-    {atoll:"Laamu Atoll", islands:["Fonadhoo","Gan","Isdhoo","Kalaidhoo","Kunahandhoo","Maabaidhoo","Maamendhoo","Maavah","Mundoo","Hithadhoo"]},
-    {atoll:"Gaafu Alif Atoll", islands:["Vilingili","Dhaandhoo","Devvadhoo","Gemanafushi","Kandhuhulhudhoo","Kolamaafushi","Maamendhoo","Nilandhoo"]},
-    {atoll:"Gaafu Dhaalu Atoll", islands:["Thinadhoo","Faresmaathoda","Fiyoari","Gadhdhoo","Hoadhedhdhoo","Madaveli","Nadallaa","Rathafandhoo","Vaadhoo"]},
+    {atoll:"Meemu Atoll", islands:["Dhiggaru","Kolhufushi","Maduvvaree","Mulah","Muli","Naalaafushi","Raimmandhoo","Veyvah"]},
+    {atoll:"Faafu Atoll", islands:["Feeali","Bileddhoo","Dharanboodhoo","Magoodhoo","Nilandhoo"]},
+    {atoll:"Dhaalu Atoll", islands:["Bandidhoo","Gemendhoo","Huluhedheli","Kudahuvadhoo","Maaenboodhoo","Meedhoo","Rinbudhoo"]},
+    {atoll:"Thaa Atoll", islands:["Buruni","Dhiyamigili","Gaadhiffushi","Guraidhoo","Hirilandhoo","Kandoodhoo","Kinbidhoo","Madifushi","Omadhoo","Thimarafushi","Vandhoo","Veimandoo","Vilufushi"]},
+    {atoll:"Laamu Atoll", islands:["Dhanbidhoo","Fonadhoo","Gaadhoo","Gan","Isdhoo","Kalaidhoo","Kunahandhoo","Maabaidhoo","Maamendhoo","Maavah","Mundoo"]},
+    {atoll:"Gaafu Alifu Atoll", islands:["Dhaandhoo","Dhevvadhoo","Gemanafushi","Kanduhulhudhoo","Kolamaafushi","Kondey","Maamendhoo","Nilandhoo","Villingili"]},
+    {atoll:"Gaafu Dhaalu Atoll", islands:["Fares-Maathoda","Fiyoari","Gaddhoo","Hoandeddhoo","Nadella","Rathafandhoo","Thinadhoo","Vaadhoo","Madaveli"]},
     {atoll:"Gnaviyani Atoll", islands:["Fuvahmulah"]},
-    {atoll:"Seenu Atoll", islands:["Hithadhoo","Feydhoo","Hulhudhoo","Maradhoo","Maradhoofeydhoo","Meedhoo"]}
+    {atoll:"Seenu Atoll", islands:["Feydhoo","Hithadhoo","Hulhudhoo","Meedhoo","Maradhoo","Maradhoo-Feydhoo"]}
   ];
   // Some island names repeat across different atolls (a real feature of Maldives
   // geography, e.g. "Meedhoo" exists in three atolls) — the picker shows the
@@ -559,11 +536,6 @@
     {name:"Thulusdhoo", x:58, y:132},{name:"Fulidhoo", x:78, y:154},{name:"Rasdhoo", x:60, y:178},
     {name:"Ukulhas", x:82, y:198},{name:"Dhangethi", x:64, y:222},{name:"Dhigurah", x:86, y:244}
   ];
-
-  const BIZ_FREE_LIMIT = 1;
-  const BIZ_PRO_LIMIT = 10;
-  const BIZ_PRO_DAYS = 30;
-  const BIZ_PRO_PRICE = "$10"; // placeholder price — change freely, no amount was specified
 
   // Point this at wherever you deploy server.js. Empty string assumes the API
   // is served from the same origin as this page.
@@ -676,8 +648,7 @@
   };
 
   let state = {
-    island: null, category: "All", isPro: false, view: "explore", lang: "en",
-    bizEmail: null, bizToken: null, authMode: "signin"
+    island: null, category: "All", isPro: false, view: "explore", lang: "en"
   };
 
   // ---------- local device storage (real localStorage — this is a normal external site) ----------
@@ -688,7 +659,6 @@
   async function api(path, opts){
     opts = opts || {};
     const headers = Object.assign({ "Content-Type": "application/json" }, opts.headers || {});
-    if(state.bizToken) headers["Authorization"] = "Bearer " + state.bizToken;
     try{
       const res = await fetch(API_BASE + path, {
         method: opts.method || "GET",
@@ -786,18 +756,29 @@
           <span class="flap">${escapeHtml(m.isl.toUpperCase())}<span class="flap-atoll">${escapeHtml(m.atoll)}</span></span>
           <span class="status" style="--d:${i}">${STATUS_WORDS[i % STATUS_WORDS.length]}</span>
         </div>`).join('') : `<div class="board-empty">No islands match "${escapeHtml(filterText)}"</div>`;
+      el.querySelectorAll('.board-row').forEach(row=>{
+        row.addEventListener('click', ()=>chooseIsland(row.getAttribute('data-island')));
+      });
     } else {
-      el.innerHTML = ATOLLS.map(a => `
-        <div class="atoll-heading">${escapeHtml(a.atoll)}</div>
-        ${a.islands.map((isl,i)=>`
-          <div class="board-row" data-island="${escapeAttr(isl)}">
-            <span class="flap">${escapeHtml(isl.toUpperCase())}</span>
-            <span class="status" style="--d:${i}">${STATUS_WORDS[i % STATUS_WORDS.length]}</span>
-          </div>`).join('')}`).join('');
+      el.innerHTML = ATOLLS.map((a,gi) => `
+        <button type="button" class="atoll-toggle" data-atoll-idx="${gi}"><span>${escapeHtml(a.atoll)}</span><span class="chevron">▸</span></button>
+        <div class="atoll-body" id="boardAtoll${gi}">
+          ${a.islands.map((isl,i)=>`
+            <div class="board-row" data-island="${escapeAttr(isl)}">
+              <span class="flap">${escapeHtml(isl.toUpperCase())}</span>
+              <span class="status" style="--d:${i}">${STATUS_WORDS[i % STATUS_WORDS.length]}</span>
+            </div>`).join('')}
+        </div>`).join('');
+      el.querySelectorAll('.atoll-toggle').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          btn.classList.toggle('open');
+          document.getElementById('boardAtoll' + btn.getAttribute('data-atoll-idx')).classList.toggle('open');
+        });
+      });
+      el.querySelectorAll('.board-row').forEach(row=>{
+        row.addEventListener('click', ()=>chooseIsland(row.getAttribute('data-island')));
+      });
     }
-    el.querySelectorAll('.board-row').forEach(row=>{
-      row.addEventListener('click', ()=>chooseIsland(row.getAttribute('data-island')));
-    });
     renderAtollMap();
   }
 
@@ -818,47 +799,6 @@
     state.island = name;
     lsSet('ii-island', name);
     enterApp();
-  }
-
-  // ---------- reusable island picker popup (search + atoll grouping) ----------
-  // Used anywhere a form needs one island — never a native <select>.
-  function renderPickerList(container, filterText, onSelect){
-    const filter = (filterText || '').trim().toLowerCase();
-    if(filter){
-      const matches = [];
-      ATOLLS.forEach(a => a.islands.forEach(isl => { if(isl.toLowerCase().includes(filter)) matches.push({isl, atoll:a.atoll}); }));
-      container.innerHTML = matches.length ? matches.map(m => `
-        <div class="picker-row" data-island="${escapeAttr(m.isl)}"><span>${escapeHtml(m.isl)}</span><span class="picker-atoll">${escapeHtml(m.atoll)}</span></div>
-      `).join('') : `<div class="empty">No islands match "${escapeHtml(filterText)}"</div>`;
-    } else {
-      container.innerHTML = ATOLLS.map(a => `
-        <div class="picker-group">
-          <div class="picker-atoll-heading">${escapeHtml(a.atoll)}</div>
-          ${a.islands.map(isl => `<div class="picker-row" data-island="${escapeAttr(isl)}"><span>${escapeHtml(isl)}</span></div>`).join('')}
-        </div>`).join('');
-    }
-    container.querySelectorAll('.picker-row').forEach(row => {
-      row.addEventListener('click', () => onSelect(row.getAttribute('data-island')));
-    });
-  }
-
-  function openIslandPicker(onSelect){
-    const overlay = document.createElement('div');
-    overlay.className = 'overlay';
-    overlay.innerHTML = sheetShell({
-      closeId: 'islandPickerClose', eyebrow: 'Select island', title: 'Choose an island',
-      body: `<input type="text" id="islandPickerSearch" class="search-input" placeholder="Search islands…" style="margin-bottom:12px;">
-             <div id="islandPickerResults" style="max-height:52vh; overflow-y:auto;"></div>`
-    });
-    document.body.appendChild(overlay);
-    overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.remove(); });
-    document.getElementById('islandPickerClose').addEventListener('click', ()=>overlay.remove());
-    const resultsEl = document.getElementById('islandPickerResults');
-    const searchEl = document.getElementById('islandPickerSearch');
-    function refresh(){ renderPickerList(resultsEl, searchEl.value, (isl)=>{ overlay.remove(); onSelect(isl); }); }
-    searchEl.addEventListener('input', refresh);
-    refresh();
-    searchEl.focus();
   }
 
   function renderChips(){
@@ -962,11 +902,9 @@
   }
 
   // ---------- explore ----------
-  // Small themed icon badge shown on cards — matches the popup theme colors.
+  // Large white icon shown in each card's themed header band.
   function categoryIcon(category){
-    const theme = themeFor(category);
-    const bg = theme === 'ocean' ? 'var(--teal-dim)' : theme === 'festive' ? 'var(--coral-dim)' : theme === 'warm' ? '#4A362622' : 'var(--sand-2)';
-    const fg = theme === 'ocean' ? 'var(--teal)' : theme === 'festive' ? 'var(--coral)' : theme === 'warm' ? '#4A3626' : 'var(--charcoal)';
+    const fg = "rgba(255,255,255,0.92)";
     const icons = {
       "Guesthouses": `<path d="M4 12 L12 5 L20 12 M6 11 V19 H18 V11" fill="none" stroke="${fg}" stroke-width="1.6" stroke-linejoin="round"/>`,
       "Hotels & Resorts": `<rect x="5" y="6" width="14" height="13" rx="1" fill="none" stroke="${fg}" stroke-width="1.6"/><path d="M8 9 h2 M14 9 h2 M8 13 h2 M14 13 h2" stroke="${fg}" stroke-width="1.4"/>`,
@@ -975,7 +913,7 @@
       "Shops & Rentals": `<path d="M6 9 h12 l-1 10 h-10 Z" fill="none" stroke="${fg}" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 9 a3 3 0 0 1 6 0" fill="none" stroke="${fg}" stroke-width="1.4"/>`,
       "Attractions & Activities": `<path d="M12 4 L13.8 9.2 L19 9.6 L15 13 L16.3 18.2 L12 15.2 L7.7 18.2 L9 13 L5 9.6 L10.2 9.2 Z" fill="none" stroke="${fg}" stroke-width="1.3" stroke-linejoin="round"/>`
     };
-    return `<span class="cat-icon" style="background:${bg};"><svg width="14" height="14" viewBox="0 0 24 24">${icons[category] || `<circle cx="12" cy="12" r="7" fill="none" stroke="${fg}" stroke-width="1.6"/>`}</svg></span>`;
+    return `<span class="cat-icon-lg"><svg width="18" height="18" viewBox="0 0 24 24">${icons[category] || `<circle cx="12" cy="12" r="7" fill="none" stroke="${fg}" stroke-width="1.6"/>`}</svg></span>`;
   }
 
   async function refreshExplore(){
@@ -993,15 +931,25 @@
       wrap.innerHTML = `<div class="empty">${t('emptyListingsTitle')}<br>${t('emptyListingsBody')}</div>`;
       return;
     }
-    wrap.innerHTML = filtered.map((b,i) => `
+    wrap.innerHTML = filtered.map((b,i) => {
+      const theme = themeFor(b.category);
+      return `
       <div class="card" data-id="${b.id}" style="animation-delay:${Math.min(i*0.05,0.4)}s;">
-        <div class="card-top">
-          <div class="title-row">${categoryIcon(b.category)}<div><h3>${escapeHtml(b.name)}</h3><span class="cat">${escapeHtml(catLabel(b.category))}</span></div></div>
-          ${b.verified ? '<span class="verified">Verified</span>' : ''}
+        <div class="card-band theme-${theme}">
+          ${themeDecor(theme)}
+          <div class="band-top">
+            ${categoryIcon(b.category)}
+            ${b.verified ? '<span class="verified">Verified</span>' : ''}
+          </div>
+          <h3>${escapeHtml(b.name)}</h3>
+          <span class="cat">${escapeHtml(catLabel(b.category))}</span>
         </div>
-        <p class="desc">${escapeHtml(b.desc || "")}</p>
-        <div class="card-foot"><span class="price">${escapeHtml(b.price || "")}</span><span class="tap-hint">${t('tapForDetails')}</span></div>
-      </div>`).join('');
+        <div class="card-body">
+          <p class="desc">${escapeHtml(b.desc || "")}</p>
+          <div class="card-foot"><span class="price">${escapeHtml(b.price || "")}</span><span class="tap-hint">${t('tapForDetails')}</span></div>
+        </div>
+      </div>`;
+    }).join('');
     wrap.querySelectorAll('.card').forEach(card=>{
       card.addEventListener('click', ()=>{
         const b = filtered.find(x=>x.id === card.getAttribute('data-id'));
@@ -1024,221 +972,19 @@
     }
     wrap.innerHTML = filtered.map((e,i) => `
       <div class="card" style="animation-delay:${Math.min(i*0.05,0.4)}s; cursor:default;">
-        <div class="title-row" style="margin-bottom:2px;">
-          <span class="cat-icon" style="background:var(--coral-dim);"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M4 6 L12 6 L8 12 Z M9 6 L17 6 L13 12 Z M14 6 L22 6 L18 12 Z" fill="none" stroke="var(--coral)" stroke-width="1.3" stroke-linejoin="round"/></svg></span>
+        <div class="card-band theme-festive">
+          ${themeDecor('festive')}
+          <div class="band-top">
+            <span class="cat-icon-lg"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M4 6 L12 6 L8 12 Z M9 6 L17 6 L13 12 Z M14 6 L22 6 L18 12 Z" fill="none" stroke="rgba(255,255,255,0.92)" stroke-width="1.3" stroke-linejoin="round"/></svg></span>
+          </div>
           <h3>${escapeHtml(e.title)}</h3>
+          <span class="cat">${escapeHtml(e.date)}</span>
         </div>
-        <span class="price">${escapeHtml(e.date)}</span><p class="desc">${escapeHtml(e.desc)}</p>
+        <div class="card-body">
+          <p class="desc" style="-webkit-line-clamp:4;">${escapeHtml(e.desc)}</p>
+        </div>
       </div>
     `).join('');
-  }
-
-  // ---------- business account ----------
-  function bizDaysLeft(proExpiry){ return proExpiry ? Math.ceil((proExpiry - Date.now()) / 86400000) : 0; }
-
-  function openBizUpgradeModal(acct){
-    const overlay = document.createElement('div');
-    overlay.className = 'overlay';
-    overlay.innerHTML = sheetShell({
-      eyebrow: acct.isPro ? 'Renew subscription' : 'One-time unlock', title: 'Business Pro', theme: 'pro',
-      body: `
-        <div class="price-tag">${BIZ_PRO_PRICE}<span style="font-size:14px; color:var(--charcoal); font-family:'Work Sans',sans-serif;"> / 30 days</span></div>
-        <ul>
-          <li>List up to ${BIZ_PRO_LIMIT} businesses (free plan: ${BIZ_FREE_LIMIT})</li>
-          <li>30-day subscription period</li>
-          <li>Renewing early adds 30 days to your current expiry, it doesn't reset it</li>
-        </ul>
-        <div class="row-btns">
-          <button class="btn-ghost" id="bizCancel">Not now</button>
-          <button class="btn-primary" id="bizConfirm">${acct.isPro ? 'Renew — ' + BIZ_PRO_PRICE : 'Upgrade — ' + BIZ_PRO_PRICE}</button>
-        </div>
-        <p class="fine">Demo checkout — this calls the API's mock upgrade endpoint. A live release needs a payment processor (e.g. Stripe) with recurring billing wired into server.js before this button charges a real card.</p>`
-    });
-    document.body.appendChild(overlay);
-    overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.remove(); });
-    overlay.querySelector('#bizCancel').addEventListener('click', ()=>overlay.remove());
-    overlay.querySelector('#bizConfirm').addEventListener('click', async ()=>{
-      const r = await api('/api/account/upgrade', { method:'POST' });
-      overlay.remove();
-      if(!r.ok){ toast(r.error); return; }
-      toast("Business Pro active until " + fmtDate(r.data.proExpiry));
-      refreshPortal();
-    });
-  }
-
-  function renderAcctCard(acct){
-    const slot = document.getElementById('acctCard');
-    const daysLeft = bizDaysLeft(acct.proExpiry);
-    const warn = acct.isPro && daysLeft <= 3;
-    let metaLine = acct.isPro
-      ? `Business Pro · expires ${fmtDate(acct.proExpiry)} (${daysLeft} day${daysLeft===1?'':'s'} left)`
-      : "Free plan · 1 business listing included";
-    slot.innerHTML = `
-      <div class="acct-card">
-        <div class="acct-top">
-          <div class="acct-email">${escapeHtml(acct.email)}</div>
-          <span class="acct-plan ${acct.isPro?'pro':'free'}">${acct.isPro?'PRO':'FREE'}</span>
-        </div>
-        <div class="acct-meta ${warn?'warn':''}">${metaLine}</div>
-        <button class="pro-cta" id="acctUpgradeBtn" style="margin-top:12px;">${acct.isPro ? 'Renew now' : ('Upgrade to Pro — ' + BIZ_PRO_PRICE)}</button>
-      </div>`;
-    document.getElementById('acctUpgradeBtn').addEventListener('click', ()=>openBizUpgradeModal(acct));
-  }
-
-  function openAddListingForm(acct){
-    const overlay = document.createElement('div');
-    overlay.className = 'overlay';
-    const defaultIsland = state.island || '';
-    overlay.innerHTML = sheetShell({
-      closeId: 'addClose', eyebrow: 'Business Portal', title: 'Add a business', theme: 'business',
-      subline: `${acct.listingCount}/${acct.listingLimit} listings used`,
-      body: `
-        <div class="field"><label>Business name</label><input id="f-name" placeholder="Ocean Breeze Guesthouse"></div>
-        <div class="field"><label>Category</label><select id="f-cat"></select></div>
-        <div class="field"><label>Island</label><button type="button" class="field-btn ${defaultIsland ? '' : 'placeholder'}" id="f-island-btn" data-island="${escapeAttr(defaultIsland)}">${defaultIsland ? escapeHtml(defaultIsland) : 'Choose island…'}</button></div>
-        <div class="field"><label>Description</label><textarea id="f-desc" placeholder="What makes your place worth a stop?"></textarea></div>
-        <div class="field"><label>Price range (optional)</label><input id="f-price" placeholder="e.g. $25–40/night"></div>
-        <div class="field"><label>Contact (phone or WhatsApp)</label><input id="f-contact" placeholder="+960 7xx xxxx"></div>
-        <button class="btn-block" id="saveListing">Save listing</button>`
-    });
-    document.body.appendChild(overlay);
-    document.getElementById('f-cat').innerHTML = CATEGORIES.map(c=>`<option value="${c}">${c}</option>`).join('');
-    overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.remove(); });
-    document.getElementById('addClose').addEventListener('click', ()=>overlay.remove());
-    document.getElementById('f-island-btn').addEventListener('click', ()=>{
-      openIslandPicker((isl)=>{
-        const btn = document.getElementById('f-island-btn');
-        btn.textContent = isl;
-        btn.setAttribute('data-island', isl);
-        btn.classList.remove('placeholder');
-      });
-    });
-    document.getElementById('saveListing').addEventListener('click', async ()=>{
-      const name = document.getElementById('f-name').value.trim();
-      const island = document.getElementById('f-island-btn').getAttribute('data-island');
-      if(!name){ toast("Business name is required"); return; }
-      if(!island){ toast("Choose an island"); return; }
-      const body = {
-        name, category: document.getElementById('f-cat').value, island,
-        desc: document.getElementById('f-desc').value.trim(), price: document.getElementById('f-price').value.trim(),
-        contact: document.getElementById('f-contact').value.trim()
-      };
-      const r = await api('/api/my-listings', { method:'POST', body });
-      if(!r.ok){ toast(r.error); return; }
-      overlay.remove();
-      toast(r.data.flagged ? "Listing added — flagged for admin review (matches a public Google listing)" : "Listing added");
-      refreshPortal();
-    });
-  }
-
-  function openClaimSheet(acct){
-    const overlay = document.createElement('div');
-    overlay.className = 'overlay';
-    const defaultIsland = state.island || '';
-    overlay.innerHTML = sheetShell({
-      closeId: 'claimClose', eyebrow: 'Business Portal', title: 'Claim your listing', theme: 'business',
-      subline: 'Public listings found on Google — claim yours instead of creating a duplicate',
-      body: `
-        <div class="field"><label>Island</label><button type="button" class="field-btn ${defaultIsland ? '' : 'placeholder'}" id="claim-island-btn" data-island="${escapeAttr(defaultIsland)}">${defaultIsland ? escapeHtml(defaultIsland) : 'Choose island…'}</button></div>
-        <div class="field"><label>Search by name (optional)</label><input id="claim-q" placeholder="Start typing your business name"></div>
-        <div id="claimResults" style="margin-top:6px;"></div>`
-    });
-    document.body.appendChild(overlay);
-    overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.remove(); });
-    document.getElementById('claimClose').addEventListener('click', ()=>overlay.remove());
-    const islandBtn = document.getElementById('claim-island-btn');
-    islandBtn.addEventListener('click', ()=>{
-      openIslandPicker((isl)=>{
-        islandBtn.textContent = isl;
-        islandBtn.setAttribute('data-island', isl);
-        islandBtn.classList.remove('placeholder');
-        loadResults();
-      });
-    });
-
-    async function loadResults(){
-      const island = islandBtn.getAttribute('data-island');
-      const wrap = document.getElementById('claimResults');
-      if(!island){ wrap.innerHTML = `<div class="empty">Choose an island to see unclaimed public listings there.</div>`; return; }
-      const qs = new URLSearchParams({ island });
-      const q = document.getElementById('claim-q').value.trim();
-      if(q) qs.set('q', q);
-      const r = await api('/api/unclaimed?' + qs.toString());
-      if(!r.ok){ wrap.innerHTML = `<div class="empty">${escapeHtml(r.error)}</div>`; return; }
-      if(!r.data.length){ wrap.innerHTML = `<div class="empty">No unclaimed public listings found here. You can add a new one instead.</div>`; return; }
-      wrap.innerHTML = r.data.map(b => `
-        <div class="owner-card">
-          <div><div class="oc-name">${escapeHtml(b.name)}</div><div class="oc-cat">${escapeHtml(catLabel(b.category))} · ${escapeHtml(b.desc || '')}</div></div>
-          <button class="btn-primary" style="flex:0 0 auto; padding:9px 12px;" data-claim="${b.id}">This is mine</button>
-        </div>`).join('');
-      wrap.querySelectorAll('[data-claim]').forEach(btn=>{
-        btn.addEventListener('click', async ()=>{
-          const cr = await api('/api/my-listings/claim/' + btn.getAttribute('data-claim'), { method:'POST' });
-          if(!cr.ok){ toast(cr.error); if(cr.status===403) { overlay.remove(); openBizUpgradeModal(acct); } return; }
-          overlay.remove();
-          toast("Listing claimed — you can edit its details by removing and re-adding it");
-          refreshPortal();
-        });
-      });
-    }
-    document.getElementById('claim-q').addEventListener('input', loadResults);
-    loadResults();
-  }
-
-  // ---------- portal ----------
-  function switchAuthTab(mode){
-    state.authMode = mode;
-    document.getElementById('tabSignIn').classList.toggle('active', mode==='signin');
-    document.getElementById('tabSignUp').classList.toggle('active', mode==='signup');
-    document.getElementById('authSubmit').textContent = mode==='signin' ? 'Sign in' : 'Create account';
-    document.getElementById('authErr').classList.add('hidden');
-  }
-
-  async function refreshPortal(){
-    if(!state.bizToken){
-      document.getElementById('portalSignedOut').classList.remove('hidden');
-      document.getElementById('portalSignedIn').classList.add('hidden');
-      return;
-    }
-    const acctR = await api('/api/account');
-    if(!acctR.ok){
-      state.bizToken = null; state.bizEmail = null;
-      lsSet('ii-biz-token', null); lsSet('ii-biz-email', null);
-      refreshPortal();
-      return;
-    }
-    document.getElementById('portalSignedOut').classList.add('hidden');
-    document.getElementById('portalSignedIn').classList.remove('hidden');
-    renderAcctCard(acctR.data);
-    document.getElementById('portalWho').textContent = "Listings for " + acctR.data.email;
-    const listR = await api('/api/my-listings');
-    const mine = listR.ok ? listR.data : [];
-    const wrap = document.getElementById('myListings');
-    wrap.innerHTML = mine.length ? mine.map(b => `
-      <div class="owner-card">
-        <div><div class="oc-name">${escapeHtml(b.name)}</div><div class="oc-cat">${escapeHtml(b.category)} · ${escapeHtml(b.island)}</div></div>
-        <button class="del-btn" data-del="${b.id}">Remove</button>
-      </div>`).join('') : `<div class="empty">No listings yet — add your first one below.</div>`;
-    wrap.querySelectorAll('[data-del]').forEach(btn=>{
-      btn.addEventListener('click', async ()=>{
-        const r = await api('/api/my-listings/' + btn.getAttribute('data-del'), { method:'DELETE' });
-        if(!r.ok){ toast(r.error); return; }
-        toast("Listing removed");
-        refreshPortal();
-      });
-    });
-    const addBtn = document.getElementById('showAddForm');
-    addBtn.textContent = acctR.data.listingCount >= acctR.data.listingLimit
-      ? `Limit reached (${acctR.data.listingCount}/${acctR.data.listingLimit}) — upgrade for more`
-      : `+ Add a business (${acctR.data.listingCount}/${acctR.data.listingLimit})`;
-    addBtn.onclick = () => {
-      if(acctR.data.listingCount >= acctR.data.listingLimit){ openBizUpgradeModal(acctR.data); return; }
-      openAddListingForm(acctR.data);
-    };
-    document.getElementById('showClaimForm').onclick = () => {
-      if(acctR.data.listingCount >= acctR.data.listingLimit){ openBizUpgradeModal(acctR.data); return; }
-      openClaimSheet(acctR.data);
-    };
   }
 
   // ---------- wiring ----------
@@ -1250,63 +996,16 @@
       document.getElementById('mainApp').classList.add('hidden');
       document.getElementById('boarding').classList.remove('hidden');
     });
-    document.querySelectorAll('.navbtn').forEach(b=>{ b.addEventListener('click', ()=>setView(b.getAttribute('data-view'))); });
-
-    document.getElementById('tabSignIn').addEventListener('click', ()=>switchAuthTab('signin'));
-    document.getElementById('tabSignUp').addEventListener('click', ()=>switchAuthTab('signup'));
-    document.getElementById('authSubmit').addEventListener('click', async ()=>{
-      const email = document.getElementById('authEmail').value.trim();
-      const pass = document.getElementById('authPass').value;
-      const errEl = document.getElementById('authErr');
-      errEl.classList.add('hidden');
-      const path = state.authMode === 'signup' ? '/api/auth/signup' : '/api/auth/login';
-      const r = await api(path, { method:'POST', body:{ email, password: pass } });
-      if(!r.ok){ errEl.textContent = r.error; errEl.classList.remove('hidden'); return; }
-      state.bizToken = r.data.token;
-      state.bizEmail = r.data.email;
-      lsSet('ii-biz-token', state.bizToken);
-      lsSet('ii-biz-email', state.bizEmail);
-      document.getElementById('authEmail').value = ''; document.getElementById('authPass').value = '';
-      refreshPortal();
-    });
-    document.getElementById('portalSignOut').addEventListener('click', async ()=>{
-      await api('/api/auth/logout', { method:'POST' });
-      state.bizToken = null; state.bizEmail = null;
-      lsSet('ii-biz-token', null); lsSet('ii-biz-email', null);
-      refreshPortal();
-    });
-    document.getElementById('e-island-btn').addEventListener('click', ()=>{
-      openIslandPicker((isl)=>{
-        const btn = document.getElementById('e-island-btn');
-        btn.textContent = isl;
-        btn.setAttribute('data-island', isl);
-        btn.classList.remove('placeholder');
-      });
-    });
-    document.getElementById('saveEvent').addEventListener('click', async ()=>{
-      const title = document.getElementById('e-title').value.trim();
-      const island = document.getElementById('e-island-btn').getAttribute('data-island');
-      if(!title){ toast("Event title is required"); return; }
-      if(!island){ toast("Choose an island"); return; }
-      const body = { title, island, date: document.getElementById('e-date').value.trim(), desc: document.getElementById('e-desc').value.trim() };
-      const r = await api('/api/events', { method:'POST', body });
-      if(!r.ok){ toast(r.error); return; }
-      ['e-title','e-date','e-desc'].forEach(id=>document.getElementById(id).value='');
-      const btn = document.getElementById('e-island-btn');
-      btn.textContent = 'Choose island…'; btn.setAttribute('data-island',''); btn.classList.add('placeholder');
-      toast("Event posted");
-    });
+    document.querySelectorAll('.navbtn[data-view]').forEach(b=>{ b.addEventListener('click', ()=>setView(b.getAttribute('data-view'))); });
   }
 
   function setView(v){
     state.view = v;
     document.getElementById('view-explore').classList.toggle('hidden', v!=='explore');
     document.getElementById('view-events').classList.toggle('hidden', v!=='events');
-    document.getElementById('view-portal').classList.toggle('hidden', v!=='portal');
-    document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active', b.getAttribute('data-view')===v));
+    document.querySelectorAll('.navbtn[data-view]').forEach(b=>b.classList.toggle('active', b.getAttribute('data-view')===v));
     if(v==='explore') refreshExplore();
     if(v==='events') refreshEvents();
-    if(v==='portal') refreshPortal();
   }
 
   function enterApp(){
@@ -1330,8 +1029,6 @@
   async function init(){
     state.lang = lsGet('ii-lang', 'en');
     state.isPro = lsGet('ii-tourist-pro', false);
-    state.bizToken = lsGet('ii-biz-token', null);
-    state.bizEmail = lsGet('ii-biz-email', null);
     await loadAtolls();
     renderBoard();
     wire();
