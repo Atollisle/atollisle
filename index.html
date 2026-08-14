@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atoll Isle — Maldives Local Island Guide</title>
+<meta name="description" content="Find guesthouses, cafes, dives and events on Maldives local islands.">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0B2E35">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='34' r='20' fill='none' stroke='%231F8A8C' stroke-width='5'/%3E%3Cpath d='M32 9 L32 34 L45 34 Z' fill='%23D8472B'/%3E%3Ccircle cx='32' cy='34' r='3' fill='%230B2E35'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@500;600&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0B2E35;
+    --ink-2:#123F47;
+    --teal:#1F8A8C;
+    --teal-dim:#1F8A8C33;
+    --sand:#F3ECDD;
+    --sand-2:#EAE0C9;
+    --coral:#D8472B;
+    --coral-dim:#D8472B22;
+    --charcoal:#1C2521;
+    --line: rgba(11,46,53,0.14);
+    --white:#FFFDF8;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--sand);
+    color:var(--charcoal);
+    font-family:'Work Sans', sans-serif;
+    min-height:100vh;
+  }
+  .shell{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    background:var(--sand);
+    position:relative;
+    display:flex;
+    flex-direction:column;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--teal);
+    font-weight:600;
+  }
+  h1,h2,h3{
+    font-family:'Instrument Serif', serif;
+    font-weight:400;
+    margin:0;
+    letter-spacing:0.01em;
+  }
+  .logo-mark{display:block; flex:0 0 auto;}
+  .logo-row{display:flex; align-items:center; gap:10px;}
+  .logo-word{font-family:'Instrument Serif', serif; font-size:22px; color:var(--white); line-height:1;}
+  /* ---------- BOARDING SCREEN ---------- */
+  #boarding{
+    background:var(--ink);
+    color:var(--white);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    padding:24px 22px 22px;
+  }
+  .board-top .eyebrow{color:#7FCFCB;}
+  .board-title{
+    font-size:40px;
+    line-height:1.02;
+    margin-top:14px;
+    color:var(--white);
+  }
+  .board-sub{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:#9FC7C3;
+    margin-top:10px;
+    letter-spacing:0.04em;
+  }
+  .board-area{margin-top:22px; display:flex; flex-direction:column; gap:18px;}
+  .atoll-map{width:100%; display:block;}
+  .atoll-dot{cursor:pointer;}
+  .atoll-dot circle{transition:r 0.15s ease, fill 0.15s ease;}
+  .atoll-dot:hover circle{fill:var(--coral);}
+  .board{
+    border-top:1px solid rgba(255,255,255,0.18);
+  }
+  .board-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px 2px;
+    border-bottom:1px solid rgba(255,255,255,0.18);
+    cursor:pointer;
+    background:transparent;
+    transition:background 0.15s ease;
+  }
+  .board-row:hover, .board-row:active{background:rgba(255,255,255,0.06);}
+  .board-row .flap{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    font-size:15px;
+    letter-spacing:0.04em;
+  }
+  .board-row .status{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.08em;
+    color:#7FCFCB;
+    animation: flicker 3.4s ease-in-out infinite;
+    animation-delay: calc(var(--d) * 0.28s);
+  }
+  @keyframes flicker{ 0%,92%,100%{opacity:1;} 95%{opacity:0.35;} }
+  .board-hint{
+    margin-top:auto;
+    padding-top:20px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:#6FA6A2;
+    letter-spacing:0.06em;
+  }
+  /* ---------- TOP BAR ---------- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 18px;
+    background:var(--ink);
+    color:var(--white);
+    position:sticky;
+    top:0;
+    z-index:20;
+  }
+  .isle-eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.1em;
+    color:#7FCFCB;
+    display:block;
+    margin-bottom:2px;
+  }
+  .isle{font-family:'Instrument Serif', serif; font-size:20px;}
+  .switch-btn{
+    background:transparent;
+    border:1px solid rgba(255,255,255,0.35);
+    color:var(--white);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.06em;
+    padding:7px 10px;
+    border-radius:20px;
+    cursor:pointer;
+  }
+  .pro-pill{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.06em;
+    padding:5px 9px;
+    border-radius:20px;
+    margin-left:8px;
+    display:inline-block;
+  }
+  .pro-pill.on{background:var(--coral); color:var(--white);}
+  .pro-pill.off{background:rgba(255,255,255,0.14); color:#B9D8D5; border:1px solid rgba(255,255,255,0.25);}
+  /* ---------- CONTENT ---------- */
+  .content{flex:1; padding:16px 18px 96px;}
+  .chips{display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:16px;}
+  .chip{
+    flex:0 0 auto;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.04em;
+    padding:8px 13px;
+    border-radius:20px;
+    border:1px solid var(--line);
+    background:var(--white);
+    color:var(--charcoal);
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .chip.active{background:var(--ink); color:var(--white); border-color:var(--ink);}
+  .section-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--teal);
+    margin:22px 0 10px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .card{
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:15px;
+    margin-bottom:12px;
+    cursor:pointer;
+  }
+  .card-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
+  .card h3{font-size:20px;}
+  .card .cat{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--teal);
+    margin-top:2px;
+    display:block;
+  }
+  .verified{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:9px;
+    letter-spacing:0.06em;
+    background:var(--teal-dim);
+    color:var(--teal);
+    padding:3px 7px;
+    border-radius:20px;
+    flex:0 0 auto;
+  }
+  .card p.desc{font-size:13.5px; line-height:1.5; margin:9px 0 0; color:#3a4642; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;}
+  .card-foot{display:flex; align-items:center; justify-content:space-between; margin-top:12px; padding-top:12px; border-top:1px dashed var(--line);}
+  .price{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--charcoal);}
+  .tap-hint{font-family:'IBM Plex Mono', monospace; font-size:10px; color:#9aa39e;}
+  .empty{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:#7c8a85;
+    padding:30px 8px;
+    text-align:center;
+    border:1px dashed var(--line);
+    border-radius:10px;
+  }
+  /* ---------- PRO BANNER / OVERLAY / SHEET ---------- */
+  .pro-banner{
+    background:linear-gradient(135deg, var(--ink), var(--ink-2));
+    color:var(--white);
+    border-radius:12px;
+    padding:16px;
+    margin-bottom:18px;
+  }
+  .pro-banner .eyebrow{color:#7FCFCB;}
+  .pro-banner h3{color:var(--white); font-size:22px; margin-top:4px;}
+  .pro-banner p{font-size:13px; color:#CFE6E3; margin:8px 0 12px; line-height:1.5;}
+  .pro-cta{background:var(--coral); color:var(--white); border:none; font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.04em; padding:10px 16px; border-radius:8px; cursor:pointer;}
+  .overlay{
+    position:fixed; inset:0; background:rgba(11,46,53,0.6);
+    display:flex; align-items:flex-end; justify-content:center;
+    z-index:50;
+  }
+  .sheet{
+    background:var(--sand);
+    width:100%; max-width:480px;
+    max-height:88vh;
+    overflow-y:auto;
+    border-radius:18px 18px 0 0;
+    padding:0;
+    position:relative;
+  }
+  .sheet-head{
+    background:linear-gradient(135deg, var(--ink), var(--ink-2));
+    color:var(--white);
+    padding:20px 20px 16px;
+    position:relative;
+  }
+  .sheet-head .logo-row{margin-bottom:10px;}
+  .sheet-head .eyebrow{color:#7FCFCB;}
+  .sheet-head h2{color:var(--white); font-size:25px; margin-top:6px;}
+  .sheet-head .subline{font-family:'IBM Plex Mono', monospace; font-size:11px; color:#9FC7C3; margin-top:6px;}
+  .sheet-wave{display:block; width:100%; height:12px;}
+  .sheet-body{padding:20px 20px 26px;}
+  .sheet .price-tag{font-family:'IBM Plex Mono', monospace; font-size:30px; color:var(--coral); margin:2px 0 4px;}
+  .sheet ul{padding-left:18px; margin:14px 0 18px; font-size:13.5px; line-height:1.7; color:#3a4642;}
+  .sheet .row-btns{display:flex; gap:10px;}
+  .btn-primary{flex:1; background:var(--coral); color:var(--white); border:none; font-family:'IBM Plex Mono', monospace; font-size:12.5px; letter-spacing:0.03em; padding:13px; border-radius:9px; cursor:pointer;}
+  .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--charcoal); font-family:'IBM Plex Mono', monospace; font-size:12.5px; padding:13px 16px; border-radius:9px; cursor:pointer;}
+  .fine{font-size:11px; color:#8a8477; margin-top:12px; line-height:1.5;}
+  .close-x{position:absolute; top:14px; right:16px; background:rgba(255,255,255,0.12); border:none; width:28px; height:28px; border-radius:50%; font-size:18px; color:var(--white); cursor:pointer; line-height:1;}
+  /* ---------- PORTAL ---------- */
+  .field{margin-bottom:12px;}
+  .field label{display:block; font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--teal); margin-bottom:5px;}
+  .field input, .field select, .field textarea{width:100%; padding:11px 12px; border-radius:8px; border:1px solid var(--line); font-family:'Work Sans', sans-serif; font-size:14px; background:var(--white); color:var(--charcoal);}
+  .field textarea{resize:vertical; min-height:70px;}
+  .btn-block{width:100%; background:var(--ink); color:var(--white); border:none; font-family:'IBM Plex Mono', monospace; font-size:12.5px; letter-spacing:0.03em; padding:13px; border-radius:9px; cursor:pointer; margin-top:6px;}
+  .owner-card{display:flex; justify-content:space-between; align-items:center; background:var(--white); border:1px solid var(--line); border-radius:9px; padding:12px 14px; margin-bottom:9px;}
+  .owner-card .oc-name{font-family:'Instrument Serif', serif; font-size:18px;}
+  .owner-card .oc-cat{font-family:'IBM Plex Mono', monospace; font-size:10px; color:var(--teal);}
+  .del-btn{background:transparent; border:none; color:var(--coral); font-family:'IBM Plex Mono', monospace; font-size:11px; cursor:pointer;}
+  .acct-card{background:var(--ink); color:var(--white); border-radius:12px; padding:16px; margin-bottom:18px;}
+  .acct-top{display:flex; justify-content:space-between; align-items:flex-start;}
+  .acct-email{font-family:'IBM Plex Mono', monospace; font-size:12px; color:#B9D8D5; word-break:break-all;}
+  .acct-plan{font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.06em; padding:5px 9px; border-radius:20px; flex:0 0 auto; margin-left:8px;}
+  .acct-plan.pro{background:var(--coral);}
+  .acct-plan.free{background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.25);}
+  .acct-meta{font-family:'IBM Plex Mono', monospace; font-size:11px; color:#9FC7C3; margin-top:10px; line-height:1.7;}
+  .acct-meta.warn{color:#FFD1C2;}
+  .auth-tabs{display:flex; gap:8px; margin-bottom:16px;}
+  .auth-tab{flex:1; text-align:center; padding:10px; border-radius:8px; border:1px solid var(--line); background:var(--white); font-family:'IBM Plex Mono', monospace; font-size:11.5px; cursor:pointer;}
+  .auth-tab.active{background:var(--ink); color:var(--white); border-color:var(--ink);}
+  .auth-err{font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--coral); margin:-4px 0 10px;}
+  /* ---------- BOTTOM NAV ---------- */
+  .bottomnav{position:fixed; bottom:0; left:0; right:0; max-width:480px; margin:0 auto; background:var(--ink); display:flex; z-index:30; border-top:1px solid rgba(255,255,255,0.1);}
+  .navbtn{flex:1; background:transparent; border:none; color:#9FC7C3; font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.05em; padding:13px 4px 12px; cursor:pointer; text-transform:uppercase;}
+  .navbtn.active{color:var(--white); border-top:2px solid var(--coral); padding-top:11px;}
+  .hidden{display:none !important;}
+  .toast{position:fixed; bottom:78px; left:50%; transform:translateX(-50%); background:var(--charcoal); color:var(--white); padding:10px 16px; border-radius:20px; font-family:'IBM Plex Mono', monospace; font-size:11.5px; z-index:60; opacity:0; transition:opacity 0.25s ease; pointer-events:none; white-space:nowrap; max-width:88vw; text-align:center;}
+  .toast.show{opacity:1;}
+
+  /* ---------- DESKTOP / PC LAYOUT ---------- */
+  @media (min-width: 860px){
+    .shell{max-width:1180px;}
+    #boarding{padding:48px 56px;}
+    .board-title{font-size:56px;}
+    .board-area{flex-direction:row; align-items:flex-start; gap:48px; margin-top:36px;}
+    .board-area .board-col{flex:1;}
+    .board-area .map-col{width:280px; flex:0 0 auto;}
+    .board{max-width:520px;}
+    .topbar{padding:16px 40px; position:sticky;}
+    .content{padding:24px 40px 60px; max-width:1180px; margin:0 auto;}
+    .chips{flex-wrap:wrap; overflow:visible;}
+    #listings, #eventsList, #myListings{display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px;}
+    .card{margin-bottom:0;}
+    .bottomnav{position:sticky; top:0; bottom:auto; max-width:none; justify-content:flex-start; padding:0 40px; border-top:none; border-bottom:1px solid rgba(255,255,255,0.1);}
+    .navbtn{flex:0 0 auto; padding:14px 22px;}
+    .navbtn.active{padding-top:12px;}
+    .sheet{max-width:520px; border-radius:16px; margin-bottom:6vh;}
+    .overlay{align-items:center;}
+    #view-portal{max-width:640px;}
+  }
+</style>
+</head>
+<body>
+<div class="shell" id="shell">
+
+  <!-- BOARDING SCREEN -->
+  <section id="boarding">
+    <div class="board-top">
+      <div style="display:flex; align-items:center; justify-content:space-between;">
+        <div class="logo-row">
+          <svg class="logo-mark" width="30" height="30" viewBox="0 0 64 64"><circle cx="32" cy="34" r="20" fill="none" stroke="var(--teal)" stroke-width="5"/><path d="M32 9 L32 34 L45 34 Z" fill="var(--coral)"/><circle cx="32" cy="34" r="3" fill="var(--ink-2)"/></svg>
+          <span class="eyebrow" data-i18n="subEyebrow">Malé Int'l Airport · Arrivals</span>
+        </div>
+        <button class="switch-btn" id="langBtnBoard">EN</button>
+      </div>
+      <h1 class="board-title">Atoll<br>Isle</h1>
+      <div class="board-sub" data-i18n="subLine">GUESTHOUSES · CAFÉS · DIVE &amp; EXCURSIONS · EVENTS — BY ISLAND</div>
+    </div>
+    <div class="board-area">
+      <div class="board-col">
+        <div class="board" id="boardList"></div>
+      </div>
+      <div class="map-col">
+        <svg class="atoll-map" id="atollMap" viewBox="0 0 160 260" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+    </div>
+    <div class="board-hint" data-i18n="boardHint">Tap an island to board · you can change this later</div>
+  </section>
+
+  <!-- MAIN APP -->
+  <div id="mainApp" class="hidden" style="display:flex; flex-direction:column; flex:1;">
+    <div class="topbar">
+      <div class="logo-row">
+        <svg class="logo-mark" width="26" height="26" viewBox="0 0 64 64"><circle cx="32" cy="34" r="20" fill="none" stroke="var(--teal)" stroke-width="5"/><path d="M32 9 L32 34 L45 34 Z" fill="var(--coral)"/><circle cx="32" cy="34" r="3" fill="var(--ink-2)"/></svg>
+        <div>
+          <span class="isle-eyebrow" data-i18n="nowViewing">Now viewing</span>
+          <span class="isle" id="isleName">—</span>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center;">
+        <span class="pro-pill off" id="proPill">Free</span>
+        <button class="switch-btn" id="langBtnTop" style="margin-left:8px;">EN</button>
+        <button class="switch-btn" id="switchIsleBtn" style="margin-left:8px;" data-i18n="changeIsland">Change island</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- EXPLORE VIEW -->
+      <div id="view-explore">
+        <div class="chips" id="chipRow"></div>
+        <div id="proBannerSlot"></div>
+        <div class="section-label" id="listLabel">Places</div>
+        <div id="listings"></div>
+      </div>
+
+      <!-- EVENTS VIEW -->
+      <div id="view-events" class="hidden">
+        <div class="section-label" data-i18n="upcomingEvents">Upcoming events</div>
+        <div id="proBannerSlot2"></div>
+        <div id="eventsList"></div>
+      </div>
+
+      <!-- PORTAL VIEW (English-only, business owners) -->
+      <div id="view-portal" class="hidden">
+
+        <div id="portalSignedOut">
+          <div class="section-label">Business Portal</div>
+          <p style="font-size:13px; line-height:1.6; color:#3a4642; margin-top:0;">
+            List your guesthouse, café, dive shop or excursion so tourists can find you the moment they land. Create a free account to get started — 1 listing free, or go Pro for up to 10.
+          </p>
+          <div class="auth-tabs">
+            <button class="auth-tab active" id="tabSignIn">Sign in</button>
+            <button class="auth-tab" id="tabSignUp">Create account</button>
+          </div>
+          <div class="auth-err hidden" id="authErr"></div>
+          <div class="field"><label>Business email</label><input type="email" id="authEmail" placeholder="you@business.mv"></div>
+          <div class="field"><label>Password</label><input type="password" id="authPass" placeholder="••••••••"></div>
+          <button class="btn-block" id="authSubmit">Sign in</button>
+        </div>
+
+        <div id="portalSignedIn" class="hidden">
+          <div id="acctCard"></div>
+
+          <div class="section-label">
+            <span id="portalWho">Your listings</span>
+            <button class="del-btn" id="portalSignOut">Sign out</button>
+          </div>
+          <div id="myListings"></div>
+          <button class="btn-block" id="showAddForm" style="margin-top:16px;">+ Add a business</button>
+          <button class="btn-ghost" id="showClaimForm" style="width:100%; margin-top:8px;">Claim an existing public listing</button>
+
+          <div style="margin-top:24px; border-top:1px solid var(--line); padding-top:16px;">
+            <div class="section-label">Post an event</div>
+            <div class="field"><label>Event title</label><input id="e-title" placeholder="Full Moon Beach BBQ"></div>
+            <div class="field"><label>Island</label><select id="e-island"></select></div>
+            <div class="field"><label>Date</label><input id="e-date" placeholder="e.g. 22 Aug, 7pm"></div>
+            <div class="field"><label>Details</label><textarea id="e-desc" placeholder="Who it's for, cost, where to meet"></textarea></div>
+            <button class="btn-block" id="saveEvent">Post event</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="bottomnav">
+      <button class="navbtn active" data-view="explore" data-i18n="navExplore">Explore</button>
+      <button class="navbtn" data-view="events" data-i18n="navEvents">Events</button>
+      <button class="navbtn" data-view="portal" data-i18n="navPortal">Business Portal</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+(function(){
+  const ISLANDS = ["Maafushi","Guraidhoo","Thulusdhoo","Ukulhas","Rasdhoo","Dhigurah","Dhangethi","Fulidhoo","Hulhumalé","Gulhi","Himmafushi","Male'"];
+  const CATEGORIES = ["Guesthouses","Hotels & Resorts","Cafés & Restaurants","Excursions & Dive","Shops & Rentals","Attractions & Activities"];
+  const STATUS_WORDS = ["ON TIME","BOARDING","READY","OPEN"];
+
+  // Illustrative positions only — stylized chain, not a navigational chart.
+  const MAP_POINTS = [
+    {name:"Male'", x:78, y:20},{name:"Hulhumalé", x:96, y:34},{name:"Himmafushi", x:64, y:52},
+    {name:"Gulhi", x:82, y:70},{name:"Maafushi", x:68, y:92},{name:"Guraidhoo", x:88, y:112},
+    {name:"Thulusdhoo", x:58, y:132},{name:"Fulidhoo", x:78, y:154},{name:"Rasdhoo", x:60, y:178},
+    {name:"Ukulhas", x:82, y:198},{name:"Dhangethi", x:64, y:222},{name:"Dhigurah", x:86, y:244}
+  ];
+
+  const BIZ_FREE_LIMIT = 1;
+  const BIZ_PRO_LIMIT = 10;
+  const BIZ_PRO_DAYS = 30;
+  const BIZ_PRO_PRICE = "$10"; // placeholder price — change freely, no amount was specified
+
+  // Point this at wherever you deploy server.js. Empty string assumes the API
+  // is served from the same origin as this page.
+  const API_BASE = "http://localhost:8787";
+
+  const LANGS = [
+    {code:"en", label:"English"}, {code:"zh", label:"中文"}, {code:"es", label:"Español"}, {code:"it", label:"Italiano"},
+    {code:"de", label:"Deutsch"}, {code:"fr", label:"Français"}, {code:"ru", label:"Русский"}, {code:"ja", label:"日本語"}
+  ];
+
+  const TR = {
+    en:{ subEyebrow:"Malé Int'l Airport · Arrivals", subLine:"GUESTHOUSES · CAFÉS · DIVE & EXCURSIONS · EVENTS — BY ISLAND", boardHint:"Tap an island to board · you can change this later",
+      nowViewing:"Now viewing", changeIsland:"Change island", free:"Free", pro:"Pro", all:"All", allPlacesWord:"Places", placesTemplate:"{cat} on {isl}",
+      upcomingEvents:"Upcoming events", navExplore:"Explore", navEvents:"Events", navPortal:"Business Portal",
+      proBannerTitleExplore:"Unlock full contact details", proBannerBodyExplore:"Pro shows verified badges, direct phone/WhatsApp on every listing, and the full events calendar — one time, $2.",
+      proBannerTitleEvents:"See every event, not just one", proBannerBodyEvents:"Pro unlocks the full events calendar for every island, plus direct contact details on every listing.",
+      unlockProBtn:"Unlock Pro — $2", emptyListingsTitle:"No listings here yet.", emptyListingsBody:"Business owners can add one from the Business Portal tab.",
+      unlockContact:"Unlock contact", contactPrefix:"Contact —", emptyEventsTemplate:"No events posted for {isl} yet.", tapForDetails:"Tap for details",
+      modalEyebrow:"One-time unlock", modalTitle:"Atoll Isle Pro", modalBenefit1:"Direct phone & WhatsApp on every listing", modalBenefit2:"Full events calendar, every island",
+      modalBenefit3:"Verified-business filter", modalBenefit4:"No limit on listings shown", notNow:"Not now", payUnlock:"Pay $2 & unlock",
+      modalFine:"Demo checkout — this build simulates the unlock. A live release needs a payment processor (e.g. Stripe) connected on your own account before this button charges a real card.",
+      toastProUnlocked:"Pro unlocked — enjoy the full board", chooseLanguage:"Choose your language" },
+    zh:{ subEyebrow:"马累国际机场 · 抵达", subLine:"民宿 · 咖啡馆 · 潜水与出海活动 · 活动 — 按岛屿浏览", boardHint:"点选一个岛屿 · 之后仍可更改",
+      nowViewing:"当前岛屿", changeIsland:"更换岛屿", free:"免费", pro:"专业版", all:"全部", allPlacesWord:"地点", placesTemplate:"{isl}的{cat}",
+      upcomingEvents:"近期活动", navExplore:"探索", navEvents:"活动", navPortal:"商家入口",
+      proBannerTitleExplore:"解锁完整联系方式", proBannerBodyExplore:"专业版可查看认证标志、每个商家的电话/WhatsApp，以及完整活动日历 — 一次性支付 $2。",
+      proBannerTitleEvents:"查看全部活动，不止一个", proBannerBodyEvents:"专业版解锁每个岛屿的完整活动日历，以及每个商家的直接联系方式。",
+      unlockProBtn:"解锁专业版 — $2", emptyListingsTitle:"这里暂时还没有商家。", emptyListingsBody:"商家可以在“商家入口”标签页添加信息。",
+      unlockContact:"解锁联系方式", contactPrefix:"联系方式 —", emptyEventsTemplate:"{isl}暂时还没有发布活动。", tapForDetails:"点按查看详情",
+      modalEyebrow:"一次性解锁", modalTitle:"Atoll Isle 专业版", modalBenefit1:"每个商家的电话与WhatsApp", modalBenefit2:"每个岛屿的完整活动日历",
+      modalBenefit3:"认证商家筛选", modalBenefit4:"显示商家数量不受限", notNow:"暂不需要", payUnlock:"支付 $2 并解锁",
+      modalFine:"演示版结账 — 当前版本仅模拟解锁流程。正式上线前需要接入你自己账户下的支付服务商（例如 Stripe），此按钮才能真正扣款。",
+      toastProUnlocked:"专业版已解锁 — 尽情浏览", chooseLanguage:"选择语言" },
+    es:{ subEyebrow:"Aeropuerto Int'l de Malé · Llegadas", subLine:"ALOJAMIENTOS · CAFÉS · BUCEO Y EXCURSIONES · EVENTOS — POR ISLA", boardHint:"Toca una isla para continuar · puedes cambiarla después",
+      nowViewing:"Viendo ahora", changeIsland:"Cambiar isla", free:"Gratis", pro:"Pro", all:"Todos", allPlacesWord:"Lugares", placesTemplate:"{cat} en {isl}",
+      upcomingEvents:"Próximos eventos", navExplore:"Explorar", navEvents:"Eventos", navPortal:"Portal de negocios",
+      proBannerTitleExplore:"Desbloquea los datos de contacto", proBannerBodyExplore:"Pro muestra insignias verificadas, teléfono/WhatsApp directo en cada negocio y el calendario completo de eventos — pago único de $2.",
+      proBannerTitleEvents:"Ve todos los eventos, no solo uno", proBannerBodyEvents:"Pro desbloquea el calendario completo de eventos de cada isla, además de los datos de contacto directos.",
+      unlockProBtn:"Desbloquear Pro — $2", emptyListingsTitle:"Todavía no hay negocios aquí.", emptyListingsBody:"Los negocios pueden añadirse desde la pestaña Portal de negocios.",
+      unlockContact:"Desbloquear contacto", contactPrefix:"Contacto —", emptyEventsTemplate:"Todavía no hay eventos publicados en {isl}.", tapForDetails:"Toca para más información",
+      modalEyebrow:"Desbloqueo único", modalTitle:"Atoll Isle Pro", modalBenefit1:"Teléfono y WhatsApp directo en cada negocio", modalBenefit2:"Calendario completo de eventos, todas las islas",
+      modalBenefit3:"Filtro de negocios verificados", modalBenefit4:"Sin límite de negocios mostrados", notNow:"Ahora no", payUnlock:"Pagar $2 y desbloquear",
+      modalFine:"Pago de demostración — esta versión solo simula el desbloqueo. Para cobrar de verdad necesitas conectar un procesador de pagos (p. ej. Stripe) con tu propia cuenta.",
+      toastProUnlocked:"Pro desbloqueado — disfruta de todo", chooseLanguage:"Elige tu idioma" },
+    it:{ subEyebrow:"Aeroporto Int'le di Malé · Arrivi", subLine:"GUESTHOUSE · CAFFÈ · IMMERSIONI ED ESCURSIONI · EVENTI — PER ISOLA", boardHint:"Tocca un'isola per continuare · puoi cambiarla in seguito",
+      nowViewing:"Stai vedendo", changeIsland:"Cambia isola", free:"Gratis", pro:"Pro", all:"Tutti", allPlacesWord:"Luoghi", placesTemplate:"{cat} a {isl}",
+      upcomingEvents:"Prossimi eventi", navExplore:"Esplora", navEvents:"Eventi", navPortal:"Portale attività",
+      proBannerTitleExplore:"Sblocca i contatti completi", proBannerBodyExplore:"Pro mostra i badge verificati, telefono/WhatsApp diretto per ogni attività e il calendario eventi completo — pagamento unico di $2.",
+      proBannerTitleEvents:"Vedi tutti gli eventi, non solo uno", proBannerBodyEvents:"Pro sblocca il calendario eventi completo per ogni isola, oltre ai contatti diretti di ogni attività.",
+      unlockProBtn:"Sblocca Pro — $2", emptyListingsTitle:"Ancora nessuna attività qui.", emptyListingsBody:"Le attività possono aggiungersi dalla scheda Portale attività.",
+      unlockContact:"Sblocca contatto", contactPrefix:"Contatto —", emptyEventsTemplate:"Nessun evento pubblicato per {isl}.", tapForDetails:"Tocca per i dettagli",
+      modalEyebrow:"Sblocco una tantum", modalTitle:"Atoll Isle Pro", modalBenefit1:"Telefono e WhatsApp diretto per ogni attività", modalBenefit2:"Calendario eventi completo, tutte le isole",
+      modalBenefit3:"Filtro attività verificate", modalBenefit4:"Nessun limite alle attività mostrate", notNow:"Non ora", payUnlock:"Paga $2 e sblocca",
+      modalFine:"Pagamento demo — questa versione simula solo lo sblocco. Per una versione reale serve collegare un gestore di pagamenti (es. Stripe) con il tuo account prima che il pulsante addebiti una carta vera.",
+      toastProUnlocked:"Pro sbloccato — goditi tutto", chooseLanguage:"Scegli la lingua" },
+    de:{ subEyebrow:"Malé Int'l Flughafen · Ankunft", subLine:"GÄSTEHÄUSER · CAFÉS · TAUCHEN & AUSFLÜGE · EVENTS — NACH INSEL", boardHint:"Insel antippen zum Fortfahren · später änderbar",
+      nowViewing:"Aktuelle Insel", changeIsland:"Insel wechseln", free:"Kostenlos", pro:"Pro", all:"Alle", allPlacesWord:"Orte", placesTemplate:"{cat} auf {isl}",
+      upcomingEvents:"Kommende Events", navExplore:"Entdecken", navEvents:"Events", navPortal:"Anbieter-Portal",
+      proBannerTitleExplore:"Kontaktdaten freischalten", proBannerBodyExplore:"Pro zeigt verifizierte Badges, direkte Telefon-/WhatsApp-Nummern bei jedem Eintrag und den vollständigen Eventkalender — einmalig $2.",
+      proBannerTitleEvents:"Alle Events sehen, nicht nur eins", proBannerBodyEvents:"Pro schaltet den vollständigen Eventkalender für jede Insel frei, plus direkte Kontaktdaten bei jedem Eintrag.",
+      unlockProBtn:"Pro freischalten — $2", emptyListingsTitle:"Hier gibt es noch keine Einträge.", emptyListingsBody:"Anbieter können sich im Tab Anbieter-Portal eintragen.",
+      unlockContact:"Kontakt freischalten", contactPrefix:"Kontakt —", emptyEventsTemplate:"Für {isl} sind noch keine Events veröffentlicht.", tapForDetails:"Für Details antippen",
+      modalEyebrow:"Einmalige Freischaltung", modalTitle:"Atoll Isle Pro", modalBenefit1:"Direkte Telefon-/WhatsApp-Nummer bei jedem Eintrag", modalBenefit2:"Vollständiger Eventkalender, jede Insel",
+      modalBenefit3:"Filter für verifizierte Anbieter", modalBenefit4:"Keine Begrenzung der angezeigten Einträge", notNow:"Nicht jetzt", payUnlock:"$2 zahlen & freischalten",
+      modalFine:"Demo-Checkout — diese Version simuliert nur die Freischaltung. Für den echten Betrieb muss ein Zahlungsanbieter (z. B. Stripe) mit deinem eigenen Konto verbunden werden, bevor dieser Button eine echte Karte belastet.",
+      toastProUnlocked:"Pro freigeschaltet — viel Spaß", chooseLanguage:"Sprache wählen" },
+    fr:{ subEyebrow:"Aéroport Int'l de Malé · Arrivées", subLine:"PENSIONS · CAFÉS · PLONGÉE ET EXCURSIONS · ÉVÉNEMENTS — PAR ÎLE", boardHint:"Touchez une île pour continuer · modifiable plus tard",
+      nowViewing:"Île actuelle", changeIsland:"Changer d'île", free:"Gratuit", pro:"Pro", all:"Tous", allPlacesWord:"Lieux", placesTemplate:"{cat} à {isl}",
+      upcomingEvents:"Événements à venir", navExplore:"Explorer", navEvents:"Événements", navPortal:"Portail des commerçants",
+      proBannerTitleExplore:"Débloquez les coordonnées complètes", proBannerBodyExplore:"Pro affiche les badges vérifiés, le téléphone/WhatsApp direct pour chaque établissement et le calendrier complet des événements — paiement unique de $2.",
+      proBannerTitleEvents:"Voyez tous les événements, pas un seul", proBannerBodyEvents:"Pro débloque le calendrier complet des événements pour chaque île, ainsi que les coordonnées directes de chaque établissement.",
+      unlockProBtn:"Débloquer Pro — $2", emptyListingsTitle:"Aucun établissement ici pour l'instant.", emptyListingsBody:"Les commerçants peuvent s'ajouter depuis l'onglet Portail des commerçants.",
+      unlockContact:"Débloquer le contact", contactPrefix:"Contact —", emptyEventsTemplate:"Aucun événement publié pour {isl} pour l'instant.", tapForDetails:"Toucher pour les détails",
+      modalEyebrow:"Déblocage unique", modalTitle:"Atoll Isle Pro", modalBenefit1:"Téléphone et WhatsApp direct pour chaque établissement", modalBenefit2:"Calendrier complet des événements, toutes les îles",
+      modalBenefit3:"Filtre des établissements vérifiés", modalBenefit4:"Aucune limite sur les établissements affichés", notNow:"Pas maintenant", payUnlock:"Payer $2 et débloquer",
+      modalFine:"Paiement de démonstration — cette version simule uniquement le déblocage. Une mise en production nécessite de connecter un prestataire de paiement (ex. Stripe) avec votre propre compte avant que ce bouton ne débite une vraie carte.",
+      toastProUnlocked:"Pro débloqué — profitez-en", chooseLanguage:"Choisissez votre langue" },
+    ru:{ subEyebrow:"Аэропорт Мале · Прилёт", subLine:"ГЕСТХАУСЫ · КАФЕ · ДАЙВИНГ И ЭКСКУРСИИ · СОБЫТИЯ — ПО ОСТРОВАМ", boardHint:"Нажмите на остров, чтобы продолжить · можно изменить позже",
+      nowViewing:"Сейчас выбран", changeIsland:"Сменить остров", free:"Бесплатно", pro:"Pro", all:"Все", allPlacesWord:"Места", placesTemplate:"{cat} на острове {isl}",
+      upcomingEvents:"Ближайшие события", navExplore:"Обзор", navEvents:"События", navPortal:"Кабинет бизнеса",
+      proBannerTitleExplore:"Откройте полные контакты", proBannerBodyExplore:"Pro показывает проверенные значки, прямой телефон/WhatsApp у каждого заведения и полный календарь событий — разовый платёж $2.",
+      proBannerTitleEvents:"Смотрите все события, а не одно", proBannerBodyEvents:"Pro открывает полный календарь событий по каждому острову, а также прямые контакты каждого заведения.",
+      unlockProBtn:"Открыть Pro — $2", emptyListingsTitle:"Здесь пока нет заведений.", emptyListingsBody:"Владельцы бизнеса могут добавить своё заведение во вкладке «Кабинет бизнеса».",
+      unlockContact:"Открыть контакт", contactPrefix:"Контакт —", emptyEventsTemplate:"Для острова {isl} пока нет событий.", tapForDetails:"Нажмите для подробностей",
+      modalEyebrow:"Разовая разблокировка", modalTitle:"Atoll Isle Pro", modalBenefit1:"Прямой телефон и WhatsApp у каждого заведения", modalBenefit2:"Полный календарь событий по каждому острову",
+      modalBenefit3:"Фильтр проверенных заведений", modalBenefit4:"Без ограничения на число показанных заведений", notNow:"Не сейчас", payUnlock:"Оплатить $2 и открыть",
+      modalFine:"Демо-оплата — в этой версии разблокировка только имитируется. Для реального запуска нужно подключить платёжного провайдера (например, Stripe) к вашему собственному аккаунту, прежде чем эта кнопка сможет списать деньги с настоящей карты.",
+      toastProUnlocked:"Pro открыт — пользуйтесь", chooseLanguage:"Выберите язык" },
+    ja:{ subEyebrow:"マレ国際空港 · 到着", subLine:"ゲストハウス・カフェ・ダイビング＆アクティビティ・イベント — 島ごとに表示", boardHint:"島をタップして進む・後で変更できます",
+      nowViewing:"現在の島", changeIsland:"島を変更", free:"無料", pro:"Pro", all:"すべて", allPlacesWord:"スポット", placesTemplate:"{isl}の{cat}",
+      upcomingEvents:"開催予定のイベント", navExplore:"探す", navEvents:"イベント", navPortal:"事業者ポータル",
+      proBannerTitleExplore:"連絡先をすべて表示", proBannerBodyExplore:"Proでは認証バッジ、各店舗の電話/WhatsApp番号、全イベントカレンダーが表示されます — 一回限り $2。",
+      proBannerTitleEvents:"1件だけでなく全イベントを見る", proBannerBodyEvents:"Proでは各島の全イベントカレンダーと、各店舗の直接連絡先が表示されます。",
+      unlockProBtn:"Proを解除 — $2", emptyListingsTitle:"まだこの島の登録はありません。", emptyListingsBody:"事業者は「事業者ポータル」タブから登録できます。",
+      unlockContact:"連絡先を解除", contactPrefix:"連絡先 —", emptyEventsTemplate:"{isl}のイベントはまだ投稿されていません。", tapForDetails:"タップして詳細を見る",
+      modalEyebrow:"一回限りの解除", modalTitle:"Atoll Isle Pro", modalBenefit1:"各店舗の電話・WhatsApp番号", modalBenefit2:"全島の完全なイベントカレンダー",
+      modalBenefit3:"認証済み事業者フィルター", modalBenefit4:"表示件数の制限なし", notNow:"後で", payUnlock:"$2を支払って解除",
+      modalFine:"デモ決済 — このバージョンでは解除を模擬しているだけです。実際に課金するには、ご自身のアカウントで決済サービス（Stripeなど）を接続する必要があります。",
+      toastProUnlocked:"Proを解除しました — お楽しみください", chooseLanguage:"言語を選択" }
+  };
+
+  const CAT_TR = {
+    zh:{ "Guesthouses":"民宿", "Hotels & Resorts":"酒店与度假村", "Cafés & Restaurants":"咖啡馆与餐厅", "Excursions & Dive":"出海与潜水", "Shops & Rentals":"商店与租赁", "Attractions & Activities":"景点与活动" },
+    es:{ "Guesthouses":"Alojamientos", "Hotels & Resorts":"Hoteles y resorts", "Cafés & Restaurants":"Cafés y restaurantes", "Excursions & Dive":"Excursiones y buceo", "Shops & Rentals":"Tiendas y alquileres", "Attractions & Activities":"Atracciones y actividades" },
+    it:{ "Guesthouses":"Guesthouse", "Hotels & Resorts":"Hotel e resort", "Cafés & Restaurants":"Caffè e ristoranti", "Excursions & Dive":"Escursioni e immersioni", "Shops & Rentals":"Negozi e noleggi", "Attractions & Activities":"Attrazioni e attività" },
+    de:{ "Guesthouses":"Gästehäuser", "Hotels & Resorts":"Hotels & Resorts", "Cafés & Restaurants":"Cafés & Restaurants", "Excursions & Dive":"Ausflüge & Tauchen", "Shops & Rentals":"Shops & Verleih", "Attractions & Activities":"Attraktionen & Aktivitäten" },
+    fr:{ "Guesthouses":"Pensions", "Hotels & Resorts":"Hôtels et resorts", "Cafés & Restaurants":"Cafés et restaurants", "Excursions & Dive":"Excursions et plongée", "Shops & Rentals":"Boutiques et locations", "Attractions & Activities":"Attractions et activités" },
+    ru:{ "Guesthouses":"Гестхаусы", "Hotels & Resorts":"Отели и курорты", "Cafés & Restaurants":"Кафе и рестораны", "Excursions & Dive":"Экскурсии и дайвинг", "Shops & Rentals":"Магазины и прокат", "Attractions & Activities":"Достопримечательности и активности" },
+    ja:{ "Guesthouses":"ゲストハウス", "Hotels & Resorts":"ホテル＆リゾート", "Cafés & Restaurants":"カフェ＆レストラン", "Excursions & Dive":"アクティビティ＆ダイビング", "Shops & Rentals":"ショップ＆レンタル", "Attractions & Activities":"観光スポット＆アクティビティ" }
+  };
+
+  let state = {
+    island: null, category: "All", isPro: false, view: "explore", lang: "en",
+    bizEmail: null, bizToken: null, authMode: "signin"
+  };
+
+  // ---------- local device storage (real localStorage — this is a normal external site) ----------
+  function lsGet(key, fallback){ try{ const v = localStorage.getItem(key); return v === null ? fallback : JSON.parse(v); }catch(e){ return fallback; } }
+  function lsSet(key, value){ try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){} }
+
+  // ---------- backend API ----------
+  async function api(path, opts){
+    opts = opts || {};
+    const headers = Object.assign({ "Content-Type": "application/json" }, opts.headers || {});
+    if(state.bizToken) headers["Authorization"] = "Bearer " + state.bizToken;
+    try{
+      const res = await fetch(API_BASE + path, {
+        method: opts.method || "GET",
+        headers,
+        body: opts.body ? JSON.stringify(opts.body) : undefined
+      });
+      const data = await res.json().catch(()=>({}));
+      if(!res.ok) return { ok:false, status:res.status, error: data.error || "Request failed", data };
+      return { ok:true, data };
+    }catch(e){
+      return { ok:false, status:0, error:"Can't reach the API — is server.js running at " + API_BASE + "?", data:null };
+    }
+  }
+
+  function toast(msg){ const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2400); }
+  function t(key){ return (TR[state.lang] && TR[state.lang][key]) || TR.en[key] || key; }
+  function catLabel(name){ return (CAT_TR[state.lang] && CAT_TR[state.lang][name]) || name; }
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function escapeAttr(s){ return escapeHtml(s); }
+  function fmtDate(ms){ return new Date(ms).toLocaleDateString(undefined, {day:'numeric', month:'short', year:'numeric'}); }
+
+  // Builds the themed head + wave divider + body wrapper every popup uses, so no popup ever renders as a plain white card.
+  function sheetShell(opts){
+    const closeBtn = opts.closeId ? `<button class="close-x" id="${opts.closeId}">&times;</button>` : '';
+    return `
+      <div class="sheet">
+        <div class="sheet-head">
+          ${closeBtn}
+          <div class="logo-row">
+            <svg width="22" height="22" viewBox="0 0 64 64"><circle cx="32" cy="34" r="20" fill="none" stroke="var(--teal)" stroke-width="5"/><path d="M32 9 L32 34 L45 34 Z" fill="var(--coral)"/><circle cx="32" cy="34" r="3" fill="var(--sand)"/></svg>
+            <span class="eyebrow">${escapeHtml(opts.eyebrow || '')}</span>
+          </div>
+          <h2>${opts.title}</h2>
+          ${opts.subline ? `<div class="subline">${opts.subline}</div>` : ''}
+        </div>
+        <svg class="sheet-wave" viewBox="0 0 400 12" preserveAspectRatio="none"><path d="M0 6 Q 20 0 40 6 T 80 6 T 120 6 T 160 6 T 200 6 T 240 6 T 280 6 T 320 6 T 360 6 T 400 6" fill="none" stroke="var(--coral)" stroke-width="2"/></svg>
+        <div class="sheet-body">${opts.body}</div>
+      </div>`;
+  }
+
+  function applyStaticText(){
+    document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent = t(el.getAttribute('data-i18n')); });
+    document.getElementById('langBtnBoard').textContent = state.lang.toUpperCase();
+    document.getElementById('langBtnTop').textContent = state.lang.toUpperCase();
+  }
+
+  // ---------- boarding screen ----------
+  function renderBoard(){
+    const el = document.getElementById('boardList');
+    el.innerHTML = ISLANDS.map((isl,i)=>`
+      <div class="board-row" data-island="${isl}">
+        <span class="flap">${isl.toUpperCase()}</span>
+        <span class="status" style="--d:${i}">${STATUS_WORDS[i % STATUS_WORDS.length]}</span>
+      </div>`).join('');
+    el.querySelectorAll('.board-row').forEach(row=>{
+      row.addEventListener('click', ()=>chooseIsland(row.getAttribute('data-island')));
+    });
+    renderAtollMap();
+  }
+
+  function renderAtollMap(){
+    const svg = document.getElementById('atollMap');
+    const path = MAP_POINTS.map((p,i)=> (i===0?'M':'L') + p.x + ' ' + p.y).join(' ');
+    const dots = MAP_POINTS.map(p => `
+      <g class="atoll-dot" data-island="${p.name}">
+        <circle cx="${p.x}" cy="${p.y}" r="4.5" fill="var(--teal)" stroke="var(--ink)" stroke-width="1.5"><title>${p.name}</title></circle>
+      </g>`).join('');
+    svg.innerHTML = `<path d="${path}" fill="none" stroke="rgba(159,199,195,0.45)" stroke-width="1.5" stroke-dasharray="2 4"/>${dots}`;
+    svg.querySelectorAll('.atoll-dot').forEach(dot=>{
+      dot.addEventListener('click', ()=>chooseIsland(dot.getAttribute('data-island')));
+    });
+  }
+
+  function chooseIsland(name){
+    state.island = name;
+    lsSet('ii-island', name);
+    enterApp();
+  }
+
+  function populateSelects(){
+    document.getElementById('e-island').innerHTML = ISLANDS.map(i=>`<option value="${i}">${i}</option>`).join('');
+  }
+
+  function renderChips(){
+    const row = document.getElementById('chipRow');
+    const all = ["All", ...CATEGORIES];
+    row.innerHTML = all.map(c=>`<button class="chip ${c===state.category?'active':''}" data-cat="${c}">${c==="All" ? t('all') : catLabel(c)}</button>`).join('');
+    row.querySelectorAll('.chip').forEach(ch=>{ ch.addEventListener('click', ()=>{ state.category = ch.getAttribute('data-cat'); refreshExplore(); }); });
+  }
+
+  function openLangModal(){
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.innerHTML = sheetShell({
+      eyebrow: "Atoll Isle", title: t('chooseLanguage'),
+      body: `<div id="langList"></div><button class="btn-ghost" id="langCancel" style="width:100%; margin-top:8px;">${t('notNow')}</button>`
+    });
+    document.body.appendChild(overlay);
+    const list = overlay.querySelector('#langList');
+    list.innerHTML = LANGS.map(l=>`<button class="chip" data-lang="${l.code}" style="display:block; width:100%; text-align:left; margin-bottom:8px; padding:12px 14px; ${l.code===state.lang?'background:var(--ink); color:var(--white); border-color:var(--ink);':''}">${l.label}</button>`).join('');
+    list.querySelectorAll('[data-lang]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        state.lang = btn.getAttribute('data-lang');
+        lsSet('ii-lang', state.lang);
+        overlay.remove();
+        applyStaticText();
+        renderBoard();
+        if(!document.getElementById('mainApp').classList.contains('hidden')) setView(state.view);
+      });
+    });
+    overlay.querySelector('#langCancel').addEventListener('click', ()=>overlay.remove());
+    overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.remove(); });
+  }
+
+  function renderProBanner(targetId, context){
+    const slot = document.getElementById(targetId);
+    if(state.isPro){ slot.innerHTML = ""; return; }
+    const copy = context === 'events'
+      ? {h:t('proBannerTitleEvents'), p:t('proBannerBodyEvents')}
+      : {h:t('proBannerTitleExplore'), p:t('proBannerBodyExplore')};
+    slot.innerHTML = `<div class="pro-banner"><span class="eyebrow">Atoll Isle Pro</span><h3>${copy.h}</h3><p>${copy.p}</p><button class="pro-cta" id="openProModal">${t('unlockProBtn')}</button></div>`;
+    document.getElementById('openProModal').addEventListener('click', openProModal);
+  }
+
+  function openProModal(){
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.innerHTML = sheetShell({
+      eyebrow: t('modalEyebrow'), title: t('modalTitle'),
+      body: `
+        <div class="price-tag">$2.00</div>
+        <ul><li>${t('modalBenefit1')}</li><li>${t('modalBenefit2')}</li><li>${t('modalBenefit3')}</li><li>${t('modalBenefit4')}</li></ul>
+        <div class="row-btns">
+          <button class="btn-ghost" id="proCancel">${t('notNow')}</button>
+          <button class="btn-primary" id="proConfirm">${t('payUnlock')}</button>
+        </div>
+        <p class="fine">${t('modalFine')}</p>`
+    });
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.remove(); });
+    document.getElementById('proCancel').addEventListener('click', ()=>overlay.remove());
+    document.getElementById('proConfirm').addEventListener('click', ()=>{
+      state.isPro = true;
+      lsSet('ii-tourist-pro', true);
+      overlay.remove();
+      updateProPill();
+      refreshExplore();
+      refreshEvents();
+      toast(t('toastProUnlocked'));
+    });
+  }
+
+  function updateProPill(){
+    const pill = document.getElementById('proPill');
+    pill.textContent = state.isPro ? t('pro') : t('free');
+    pill.className = "pro-pill " + (state.isPro ? "on" : "off");
+  }
+
+  // ---------- listing detail popup ----------
+  function openListingDetail(b){
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    const contactHtml = state.isPro
+      ? `<a class="btn-primary" style="display:block; text-align:center; text-decoration:none;" href="tel:${escapeAttr(b.contact||'')}">${t('contactPrefix')} ${escapeHtml(b.contact||'')}</a>`
+      : `<button class="btn-primary" id="detailUnlock" style="width:100%;">${t('unlockContact')}</button>`;
+    overlay.innerHTML = sheetShell({
+      closeId: 'detailClose',
+      eyebrow: catLabel(b.category) + " · " + b.island,
+      title: escapeHtml(b.name),
+      subline: b.verified ? '✓ Verified listing' : '',
+      body: `
+        <p style="font-size:14px; line-height:1.6; color:#3a4642; margin:0 0 14px;">${escapeHtml(b.desc || "")}</p>
+        <div class="price" style="margin-bottom:16px;">${escapeHtml(b.price || "")}</div>
+        ${b.contact ? contactHtml : ''}`
+    });
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.remove(); });
+    document.getElementById('detailClose').addEventListener('click', ()=>overlay.remove());
+    const unlockBtn = document.getElementById('detailUnlock');
+    if(unlockBtn) unlockBtn.addEventListener('click', ()=>{ overlay.remove(); openProModal(); });
+  }
+
+  // ---------- explore ----------
+  async function refreshExplore(){
+    renderChips();
+    renderProBanner('proBannerSlot', 'explore');
+    const label = document.getElementById('listLabel');
+    const catText = state.category === "All" ? t('allPlacesWord') : catLabel(state.category);
+    label.textContent = t('placesTemplate').replace('{cat}', catText).replace('{isl}', state.island);
+    const wrap = document.getElementById('listings');
+    const qs = new URLSearchParams({ island: state.island, category: state.category });
+    const r = await api('/api/businesses?' + qs.toString());
+    if(!r.ok){ wrap.innerHTML = `<div class="empty">${escapeHtml(r.error)}</div>`; return; }
+    const filtered = r.data;
+    if(!filtered.length){
+      wrap.innerHTML = `<div class="empty">${t('emptyListingsTitle')}<br>${t('emptyListingsBody')}</div>`;
+      return;
+    }
+    wrap.innerHTML = filtered.map(b => `
+      <div class="card" data-id="${b.id}">
+        <div class="card-top">
+          <div><h3>${escapeHtml(b.name)}</h3><span class="cat">${escapeHtml(catLabel(b.category))}</span></div>
+          ${b.verified ? '<span class="verified">Verified</span>' : ''}
+        </div>
+        <p class="desc">${escapeHtml(b.desc || "")}</p>
+        <div class="card-foot"><span class="price">${escapeHtml(b.price || "")}</span><span class="tap-hint">${t('tapForDetails')}</span></div>
+      </div>`).join('');
+    wrap.querySelectorAll('.card').forEach(card=>{
+      card.addEventListener('click', ()=>{
+        const b = filtered.find(x=>x.id === card.getAttribute('data-id'));
+        if(b) openListingDetail(b);
+      });
+    });
+  }
+
+  // ---------- events ----------
+  async function refreshEvents(){
+    renderProBanner('proBannerSlot2', 'events');
+    const wrap = document.getElementById('eventsList');
+    const r = await api('/api/events?island=' + encodeURIComponent(state.island));
+    if(!r.ok){ wrap.innerHTML = `<div class="empty">${escapeHtml(r.error)}</div>`; return; }
+    let filtered = r.data;
+    if(!state.isPro){ filtered = filtered.slice(0,1); }
+    if(!filtered.length){
+      wrap.innerHTML = `<div class="empty">${t('emptyEventsTemplate').replace('{isl}', escapeHtml(state.island))}</div>`;
+      return;
+    }
+    wrap.innerHTML = filtered.map(e => `
+      <div class="card"><h3>${escapeHtml(e.title)}</h3><span class="price">${escapeHtml(e.date)}</span><p class="desc">${escapeHtml(e.desc)}</p></div>
+    `).join('');
+  }
+
+  // ---------- business account ----------
+  function bizDaysLeft(proExpiry){ return proExpiry ? Math.ceil((proExpiry - Date.now()) / 86400000) : 0; }
+
+  function openBizUpgradeModal(acct){
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.innerHTML = sheetShell({
+      eyebrow: acct.isPro ? 'Renew subscription' : 'One-time unlock', title: 'Business Pro',
+      body: `
+        <div class="price-tag">${BIZ_PRO_PRICE}<span style="font-size:14px; color:var(--charcoal); font-family:'Work Sans',sans-serif;"> / 30 days</span></div>
+        <ul>
+          <li>List up to ${BIZ_PRO_LIMIT} businesses (free plan: ${BIZ_FREE_LIMIT})</li>
+          <li>30-day subscription period</li>
+          <li>Renewing early adds 30 days to your current expiry, it doesn't reset it</li>
+        </ul>
+        <div class="row-btns">
+          <button class="btn-ghost" id="bizCancel">Not now</button>
+          <button class="btn-primary" id="bizConfirm">${acct.isPro ? 'Renew — ' + BIZ_PRO_PRICE : 'Upgrade — ' + BIZ_PRO_PRICE}</button>
+        </div>
+        <p class="fine">Demo checkout — this calls the API's mock upgrade endpoint. A live release needs a payment processor (e.g. Stripe) with recurring billing wired into server.js before this button charges a real card.</p>`
+    });
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.remove(); });
+    overlay.querySelector('#bizCancel').addEventListener('click', ()=>overlay.remove());
+    overlay.querySelector('#bizConfirm').addEventListener('click', async ()=>{
+      const r = await api('/api/account/upgrade', { method:'POST' });
+      overlay.remove();
+      if(!r.ok){ toast(r.error); return; }
+      toast("Business Pro active until " + fmtDate(r.data.proExpiry));
+      refreshPortal();
+    });
+  }
+
+  function renderAcctCard(acct){
+    const slot = document.getElementById('acctCard');
+    const daysLeft = bizDaysLeft(acct.proExpiry);
+    const warn = acct.isPro && daysLeft <= 3;
+    let metaLine = acct.isPro
+      ? `Business Pro · expires ${fmtDate(acct.proExpiry)} (${daysLeft} day${daysLeft===1?'':'s'} left)`
+      : "Free plan · 1 business listing included";
+    slot.innerHTML = `
+      <div class="acct-card">
+        <div class="acct-top">
+          <div class="acct-email">${escapeHtml(acct.email)}</div>
+          <span class="acct-plan ${acct.isPro?'pro':'free'}">${acct.isPro?'PRO':'FREE'}</span>
+        </div>
+        <div class="acct-meta ${warn?'warn':''}">${metaLine}</div>
+        <button class="pro-cta" id="acctUpgradeBtn" style="margin-top:12px;">${acct.isPro ? 'Renew now' : ('Upgrade to Pro — ' + BIZ_PRO_PRICE)}</button>
+      </div>`;
+    document.getElementById('acctUpgradeBtn').addEventListener('click', ()=>openBizUpgradeModal(acct));
+  }
+
+  function openAddListingForm(acct){
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.innerHTML = sheetShell({
+      closeId: 'addClose', eyebrow: 'Business Portal', title: 'Add a business',
+      subline: `${acct.listingCount}/${acct.listingLimit} listings used`,
+      body: `
+        <div class="field"><label>Business name</label><input id="f-name" placeholder="Ocean Breeze Guesthouse"></div>
+        <div class="field"><label>Category</label><select id="f-cat"></select></div>
+        <div class="field"><label>Island</label><select id="f-island"></select></div>
+        <div class="field"><label>Description</label><textarea id="f-desc" placeholder="What makes your place worth a stop?"></textarea></div>
+        <div class="field"><label>Price range (optional)</label><input id="f-price" placeholder="e.g. $25–40/night"></div>
+        <div class="field"><label>Contact (phone or WhatsApp)</label><input id="f-contact" placeholder="+960 7xx xxxx"></div>
+        <button class="btn-block" id="saveListing">Save listing</button>`
+    });
+    document.body.appendChild(overlay);
+    document.getElementById('f-cat').innerHTML = CATEGORIES.map(c=>`<option value="${c}">${c}</option>`).join('');
+    document.getElementById('f-island').innerHTML = ISLANDS.map(i=>`<option value="${i}">${i}</option>`).join('');
+    overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.remove(); });
+    document.getElementById('addClose').addEventListener('click', ()=>overlay.remove());
+    document.getElementById('saveListing').addEventListener('click', async ()=>{
+      const name = document.getElementById('f-name').value.trim();
+      if(!name){ toast("Business name is required"); return; }
+      const body = {
+        name, category: document.getElementById('f-cat').value, island: document.getElementById('f-island').value,
+        desc: document.getElementById('f-desc').value.trim(), price: document.getElementById('f-price').value.trim(),
+        contact: document.getElementById('f-contact').value.trim()
+      };
+      const r = await api('/api/my-listings', { method:'POST', body });
+      if(!r.ok){ toast(r.error); return; }
+      overlay.remove();
+      toast(r.data.flagged ? "Listing added — flagged for admin review (matches a public Google listing)" : "Listing added");
+      refreshPortal();
+    });
+  }
+
+  function openClaimSheet(acct){
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.innerHTML = sheetShell({
+      closeId: 'claimClose', eyebrow: 'Business Portal', title: 'Claim your listing',
+      subline: 'Public listings found on Google — claim yours instead of creating a duplicate',
+      body: `
+        <div class="field"><label>Island</label><select id="claim-island"></select></div>
+        <div class="field"><label>Search by name (optional)</label><input id="claim-q" placeholder="Start typing your business name"></div>
+        <div id="claimResults" style="margin-top:6px;"></div>`
+    });
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.remove(); });
+    document.getElementById('claimClose').addEventListener('click', ()=>overlay.remove());
+    const islandSel = document.getElementById('claim-island');
+    islandSel.innerHTML = ISLANDS.map(i=>`<option value="${i}">${i}</option>`).join('');
+    if(state.island) islandSel.value = state.island;
+
+    async function loadResults(){
+      const qs = new URLSearchParams({ island: islandSel.value });
+      const q = document.getElementById('claim-q').value.trim();
+      if(q) qs.set('q', q);
+      const r = await api('/api/unclaimed?' + qs.toString());
+      const wrap = document.getElementById('claimResults');
+      if(!r.ok){ wrap.innerHTML = `<div class="empty">${escapeHtml(r.error)}</div>`; return; }
+      if(!r.data.length){ wrap.innerHTML = `<div class="empty">No unclaimed public listings found here. You can add a new one instead.</div>`; return; }
+      wrap.innerHTML = r.data.map(b => `
+        <div class="owner-card">
+          <div><div class="oc-name">${escapeHtml(b.name)}</div><div class="oc-cat">${escapeHtml(catLabel(b.category))} · ${escapeHtml(b.desc || '')}</div></div>
+          <button class="btn-primary" style="flex:0 0 auto; padding:9px 12px;" data-claim="${b.id}">This is mine</button>
+        </div>`).join('');
+      wrap.querySelectorAll('[data-claim]').forEach(btn=>{
+        btn.addEventListener('click', async ()=>{
+          const cr = await api('/api/my-listings/claim/' + btn.getAttribute('data-claim'), { method:'POST' });
+          if(!cr.ok){ toast(cr.error); if(cr.status===403) { overlay.remove(); openBizUpgradeModal(acct); } return; }
+          overlay.remove();
+          toast("Listing claimed — you can edit its details by removing and re-adding it");
+          refreshPortal();
+        });
+      });
+    }
+    islandSel.addEventListener('change', loadResults);
+    document.getElementById('claim-q').addEventListener('input', loadResults);
+    loadResults();
+  }
+
+  // ---------- portal ----------
+  function switchAuthTab(mode){
+    state.authMode = mode;
+    document.getElementById('tabSignIn').classList.toggle('active', mode==='signin');
+    document.getElementById('tabSignUp').classList.toggle('active', mode==='signup');
+    document.getElementById('authSubmit').textContent = mode==='signin' ? 'Sign in' : 'Create account';
+    document.getElementById('authErr').classList.add('hidden');
+  }
+
+  async function refreshPortal(){
+    if(!state.bizToken){
+      document.getElementById('portalSignedOut').classList.remove('hidden');
+      document.getElementById('portalSignedIn').classList.add('hidden');
+      return;
+    }
+    const acctR = await api('/api/account');
+    if(!acctR.ok){
+      state.bizToken = null; state.bizEmail = null;
+      lsSet('ii-biz-token', null); lsSet('ii-biz-email', null);
+      refreshPortal();
+      return;
+    }
+    document.getElementById('portalSignedOut').classList.add('hidden');
+    document.getElementById('portalSignedIn').classList.remove('hidden');
+    renderAcctCard(acctR.data);
+    document.getElementById('portalWho').textContent = "Listings for " + acctR.data.email;
+    const listR = await api('/api/my-listings');
+    const mine = listR.ok ? listR.data : [];
+    const wrap = document.getElementById('myListings');
+    wrap.innerHTML = mine.length ? mine.map(b => `
+      <div class="owner-card">
+        <div><div class="oc-name">${escapeHtml(b.name)}</div><div class="oc-cat">${escapeHtml(b.category)} · ${escapeHtml(b.island)}</div></div>
+        <button class="del-btn" data-del="${b.id}">Remove</button>
+      </div>`).join('') : `<div class="empty">No listings yet — add your first one below.</div>`;
+    wrap.querySelectorAll('[data-del]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const r = await api('/api/my-listings/' + btn.getAttribute('data-del'), { method:'DELETE' });
+        if(!r.ok){ toast(r.error); return; }
+        toast("Listing removed");
+        refreshPortal();
+      });
+    });
+    const addBtn = document.getElementById('showAddForm');
+    addBtn.textContent = acctR.data.listingCount >= acctR.data.listingLimit
+      ? `Limit reached (${acctR.data.listingCount}/${acctR.data.listingLimit}) — upgrade for more`
+      : `+ Add a business (${acctR.data.listingCount}/${acctR.data.listingLimit})`;
+    addBtn.onclick = () => {
+      if(acctR.data.listingCount >= acctR.data.listingLimit){ openBizUpgradeModal(acctR.data); return; }
+      openAddListingForm(acctR.data);
+    };
+    document.getElementById('showClaimForm').onclick = () => {
+      if(acctR.data.listingCount >= acctR.data.listingLimit){ openBizUpgradeModal(acctR.data); return; }
+      openClaimSheet(acctR.data);
+    };
+  }
+
+  // ---------- wiring ----------
+  function wire(){
+    document.getElementById('langBtnBoard').addEventListener('click', openLangModal);
+    document.getElementById('langBtnTop').addEventListener('click', openLangModal);
+    document.getElementById('switchIsleBtn').addEventListener('click', ()=>{
+      document.getElementById('mainApp').classList.add('hidden');
+      document.getElementById('boarding').classList.remove('hidden');
+    });
+    document.querySelectorAll('.navbtn').forEach(b=>{ b.addEventListener('click', ()=>setView(b.getAttribute('data-view'))); });
+
+    document.getElementById('tabSignIn').addEventListener('click', ()=>switchAuthTab('signin'));
+    document.getElementById('tabSignUp').addEventListener('click', ()=>switchAuthTab('signup'));
+    document.getElementById('authSubmit').addEventListener('click', async ()=>{
+      const email = document.getElementById('authEmail').value.trim();
+      const pass = document.getElementById('authPass').value;
+      const errEl = document.getElementById('authErr');
+      errEl.classList.add('hidden');
+      const path = state.authMode === 'signup' ? '/api/auth/signup' : '/api/auth/login';
+      const r = await api(path, { method:'POST', body:{ email, password: pass } });
+      if(!r.ok){ errEl.textContent = r.error; errEl.classList.remove('hidden'); return; }
+      state.bizToken = r.data.token;
+      state.bizEmail = r.data.email;
+      lsSet('ii-biz-token', state.bizToken);
+      lsSet('ii-biz-email', state.bizEmail);
+      document.getElementById('authEmail').value = ''; document.getElementById('authPass').value = '';
+      refreshPortal();
+    });
+    document.getElementById('portalSignOut').addEventListener('click', async ()=>{
+      await api('/api/auth/logout', { method:'POST' });
+      state.bizToken = null; state.bizEmail = null;
+      lsSet('ii-biz-token', null); lsSet('ii-biz-email', null);
+      refreshPortal();
+    });
+    document.getElementById('saveEvent').addEventListener('click', async ()=>{
+      const title = document.getElementById('e-title').value.trim();
+      if(!title){ toast("Event title is required"); return; }
+      const body = { title, island: document.getElementById('e-island').value, date: document.getElementById('e-date').value.trim(), desc: document.getElementById('e-desc').value.trim() };
+      const r = await api('/api/events', { method:'POST', body });
+      if(!r.ok){ toast(r.error); return; }
+      ['e-title','e-date','e-desc'].forEach(id=>document.getElementById(id).value='');
+      toast("Event posted");
+    });
+  }
+
+  function setView(v){
+    state.view = v;
+    document.getElementById('view-explore').classList.toggle('hidden', v!=='explore');
+    document.getElementById('view-events').classList.toggle('hidden', v!=='events');
+    document.getElementById('view-portal').classList.toggle('hidden', v!=='portal');
+    document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active', b.getAttribute('data-view')===v));
+    if(v==='explore') refreshExplore();
+    if(v==='events') refreshEvents();
+    if(v==='portal') refreshPortal();
+  }
+
+  function enterApp(){
+    document.getElementById('boarding').classList.add('hidden');
+    document.getElementById('mainApp').classList.remove('hidden');
+    document.getElementById('isleName').textContent = state.island;
+    updateProPill();
+    setView('explore');
+  }
+
+  function init(){
+    state.lang = lsGet('ii-lang', 'en');
+    state.isPro = lsGet('ii-tourist-pro', false);
+    state.bizToken = lsGet('ii-biz-token', null);
+    state.bizEmail = lsGet('ii-biz-email', null);
+    renderBoard();
+    populateSelects();
+    wire();
+    applyStaticText();
+    const savedIsland = lsGet('ii-island', null);
+    if(savedIsland){ state.island = savedIsland; enterApp(); }
+    if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>

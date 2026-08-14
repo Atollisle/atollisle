@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atoll Isle — Super Admin</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='34' r='20' fill='none' stroke='%231F8A8C' stroke-width='5'/%3E%3Cpath d='M32 9 L32 34 L45 34 Z' fill='%23D8472B'/%3E%3Ccircle cx='32' cy='34' r='3' fill='%230B2E35'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@500;600&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0B2E35; --ink-2:#123F47; --teal:#1F8A8C; --teal-dim:#1F8A8C33;
+    --sand:#F3ECDD; --sand-2:#EAE0C9; --coral:#D8472B; --coral-dim:#D8472B22;
+    --charcoal:#1C2521; --line:rgba(11,46,53,0.14); --white:#FFFDF8;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--sand); color:var(--charcoal); font-family:'Work Sans', sans-serif;}
+  h1,h2,h3{font-family:'Instrument Serif', serif; font-weight:400; margin:0;}
+  .eyebrow{font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--teal); font-weight:600;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  /* login */
+  #login{min-height:100vh; background:var(--ink); color:var(--white); display:flex; align-items:center; justify-content:center; padding:20px;}
+  .login-box{width:100%; max-width:360px;}
+  .logo-row{display:flex; align-items:center; gap:10px; margin-bottom:22px;}
+  .login-box input{width:100%; padding:12px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.25); background:rgba(255,255,255,0.06); color:var(--white); font-family:'Work Sans',sans-serif; font-size:14px; margin-bottom:12px;}
+  .login-box input::placeholder{color:#9FC7C3;}
+  .login-box button{width:100%; padding:13px; border:none; border-radius:9px; background:var(--coral); color:var(--white); font-family:'IBM Plex Mono',monospace; font-size:12.5px; letter-spacing:0.03em; cursor:pointer;}
+  .login-err{font-family:'IBM Plex Mono',monospace; font-size:12px; color:#FFB4A0; margin-bottom:10px;}
+  /* app shell */
+  #app{max-width:1100px; margin:0 auto; padding:0 24px 60px;}
+  header{display:flex; align-items:center; justify-content:space-between; padding:20px 0; border-bottom:1px solid var(--line); margin-bottom:22px;}
+  header .apiline{font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7c8a85;}
+  .tabs{display:flex; gap:8px; margin-bottom:22px; flex-wrap:wrap;}
+  .tab{padding:9px 16px; border-radius:20px; border:1px solid var(--line); background:var(--white); font-family:'IBM Plex Mono',monospace; font-size:12px; cursor:pointer;}
+  .tab.active{background:var(--ink); color:var(--white); border-color:var(--ink);}
+  .tab .count{background:var(--coral); color:var(--white); border-radius:10px; padding:1px 6px; font-size:10px; margin-left:6px;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+  .row-card{background:var(--white); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;}
+  .row-card h3{font-size:19px;}
+  .row-card .meta{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--teal); margin-top:3px;}
+  .row-card .sub{font-size:13px; color:#3a4642; margin-top:8px; line-height:1.5;}
+  .btns{display:flex; gap:8px; flex-wrap:wrap;}
+  .btn{padding:9px 14px; border-radius:8px; border:1px solid var(--line); background:var(--white); font-family:'IBM Plex Mono',monospace; font-size:11.5px; cursor:pointer;}
+  .btn.danger{background:var(--coral); color:var(--white); border-color:var(--coral);}
+  .btn.primary{background:var(--ink); color:var(--white); border-color:var(--ink);}
+  .badge{font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.05em; padding:3px 8px; border-radius:20px; text-transform:uppercase;}
+  .badge.google{background:var(--coral-dim); color:var(--coral);}
+  .badge.owner{background:var(--teal-dim); color:var(--teal);}
+  .badge.pro{background:var(--coral); color:var(--white);}
+  .badge.free{background:var(--sand-2); color:var(--charcoal);}
+  .empty{font-family:'IBM Plex Mono',monospace; font-size:12px; color:#7c8a85; padding:30px; text-align:center; border:1px dashed var(--line); border-radius:10px;}
+  .filterbar{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;}
+  .filterbar select, .filterbar input{padding:8px 10px; border-radius:8px; border:1px solid var(--line); font-family:'Work Sans',sans-serif; font-size:13px; background:var(--white);}
+  .sync-row{display:flex; gap:8px; align-items:center; margin-bottom:16px; flex-wrap:wrap;}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="login-box">
+    <div class="logo-row">
+      <svg width="32" height="32" viewBox="0 0 64 64"><circle cx="32" cy="34" r="20" fill="none" stroke="#1F8A8C" stroke-width="5"/><path d="M32 9 L32 34 L45 34 Z" fill="#D8472B"/><circle cx="32" cy="34" r="3" fill="#123F47"/></svg>
+      <div>
+        <span class="eyebrow" style="color:#7FCFCB;">Atoll Isle</span>
+        <h2 style="color:#fff;">Super Admin</h2>
+      </div>
+    </div>
+    <div class="login-err mono" id="loginErr" style="display:none;"></div>
+    <input type="password" id="passcodeInput" placeholder="Admin passcode">
+    <button id="loginBtn">Sign in</button>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
+  <header>
+    <div class="logo-row">
+      <svg width="28" height="28" viewBox="0 0 64 64"><circle cx="32" cy="34" r="20" fill="none" stroke="#1F8A8C" stroke-width="5"/><path d="M32 9 L32 34 L45 34 Z" fill="#D8472B"/><circle cx="32" cy="34" r="3" fill="#123F47"/></svg>
+      <div>
+        <span class="eyebrow">Atoll Isle</span>
+        <h1 style="font-size:24px;">Super Admin</h1>
+      </div>
+    </div>
+    <div class="apiline" id="apiLine"></div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-panel="flags">Duplicate Flags <span class="count" id="flagCount">0</span></button>
+    <button class="tab" data-panel="businesses">Businesses</button>
+    <button class="tab" data-panel="accounts">Business Accounts</button>
+  </div>
+
+  <!-- DUPLICATE FLAGS -->
+  <div class="panel active" id="panel-flags">
+    <p style="font-size:13px; color:#3a4642; margin-top:0;">Raised automatically whenever a business signs up with a name that matches an existing public (Google-sourced) listing on the same island. Removing the public listing hands the page over to the real owner's listing.</p>
+    <div id="flagsList"></div>
+  </div>
+
+  <!-- BUSINESSES -->
+  <div class="panel" id="panel-businesses">
+    <div class="sync-row">
+      <select id="syncIsland"></select>
+      <button class="btn primary" id="syncBtn">Sync this island</button>
+      <button class="btn primary" id="syncAllBtn">Sync ALL islands</button>
+      <span class="mono" id="syncStatus" style="font-size:11.5px; color:#7c8a85;"></span>
+    </div>
+    <div class="filterbar">
+      <select id="filterIsland"><option value="">All islands</option></select>
+      <select id="filterSource"><option value="">All sources</option><option value="owner">Owner-listed</option><option value="google">Google-sourced</option></select>
+    </div>
+    <div id="businessesList"></div>
+  </div>
+
+  <!-- ACCOUNTS -->
+  <div class="panel" id="panel-accounts">
+    <div id="accountsList"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const ISLANDS = ["Maafushi","Guraidhoo","Thulusdhoo","Ukulhas","Rasdhoo","Dhigurah","Dhangethi","Fulidhoo","Hulhumalé","Gulhi","Himmafushi","Male'"];
+  const API_BASE = "http://localhost:8787"; // same value as in index.html
+
+  let passcode = null;
+
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function fmtDate(ms){ return ms ? new Date(ms).toLocaleDateString(undefined, {day:'numeric', month:'short', year:'numeric'}) : '—'; }
+
+  async function adminApi(path, opts){
+    opts = opts || {};
+    const headers = Object.assign({ "Content-Type":"application/json", "x-admin-passcode": passcode || "" }, opts.headers || {});
+    try{
+      const res = await fetch(API_BASE + path, { method: opts.method || "GET", headers, body: opts.body ? JSON.stringify(opts.body) : undefined });
+      const data = await res.json().catch(()=>({}));
+      if(!res.ok) return { ok:false, error: data.error || "Request failed" };
+      return { ok:true, data };
+    }catch(e){
+      return { ok:false, error:"Can't reach the API — is server.js running at " + API_BASE + "?" };
+    }
+  }
+
+  document.getElementById('loginBtn').addEventListener('click', async ()=>{
+    const val = document.getElementById('passcodeInput').value;
+    passcode = val;
+    const check = await adminApi('/api/admin/duplicate-flags');
+    const errEl = document.getElementById('loginErr');
+    if(!check.ok){ errEl.textContent = check.error; errEl.style.display = 'block'; passcode = null; return; }
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('apiLine').textContent = 'API: ' + API_BASE;
+    init();
+  });
+  document.getElementById('passcodeInput').addEventListener('keydown', (e)=>{ if(e.key === 'Enter') document.getElementById('loginBtn').click(); });
+
+  document.querySelectorAll('.tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-' + tab.getAttribute('data-panel')).classList.add('active');
+    });
+  });
+
+  async function loadFlags(){
+    const r = await adminApi('/api/admin/duplicate-flags');
+    const wrap = document.getElementById('flagsList');
+    if(!r.ok){ wrap.innerHTML = `<div class="empty">${escapeHtml(r.error)}</div>`; return; }
+    const pending = r.data.filter(f => f.status === 'pending');
+    document.getElementById('flagCount').textContent = pending.length;
+    if(!pending.length){ wrap.innerHTML = `<div class="empty">No pending flags — nothing to review right now.</div>`; return; }
+    wrap.innerHTML = pending.map(f => `
+      <div class="row-card">
+        <div>
+          <h3>${escapeHtml(f.businessName)}</h3>
+          <div class="meta">${escapeHtml(f.island)} · signed up by ${escapeHtml(f.ownerEmail)}</div>
+          <div class="sub">Matches public listing: <strong>${escapeHtml(f.matchedGoogleName)}</strong> · flagged ${fmtDate(f.createdAt)}</div>
+        </div>
+        <div class="btns">
+          <button class="btn danger" data-remove="${f.id}">Remove public listing</button>
+          <button class="btn" data-dismiss="${f.id}">Dismiss</button>
+        </div>
+      </div>`).join('');
+    wrap.querySelectorAll('[data-remove]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        await adminApi('/api/admin/duplicate-flags/' + btn.getAttribute('data-remove') + '/resolve', { method:'POST', body:{action:'remove'} });
+        loadFlags(); loadBusinesses();
+      });
+    });
+    wrap.querySelectorAll('[data-dismiss]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        await adminApi('/api/admin/duplicate-flags/' + btn.getAttribute('data-dismiss') + '/resolve', { method:'POST', body:{action:'dismiss'} });
+        loadFlags();
+      });
+    });
+  }
+
+  async function loadBusinesses(){
+    const r = await adminApi('/api/admin/businesses');
+    const wrap = document.getElementById('businessesList');
+    if(!r.ok){ wrap.innerHTML = `<div class="empty">${escapeHtml(r.error)}</div>`; return; }
+    const islandFilter = document.getElementById('filterIsland').value;
+    const sourceFilter = document.getElementById('filterSource').value;
+    let list = r.data;
+    if(islandFilter) list = list.filter(b => b.island === islandFilter);
+    if(sourceFilter) list = list.filter(b => b.source === sourceFilter);
+    if(!list.length){ wrap.innerHTML = `<div class="empty">No businesses match this filter.</div>`; return; }
+    wrap.innerHTML = list.map(b => `
+      <div class="row-card">
+        <div>
+          <h3>${escapeHtml(b.name)} <span class="badge ${b.source}">${b.source === 'google' ? 'Google' : 'Owner'}</span> ${b.verified ? '<span class="badge owner">Verified</span>' : ''}</h3>
+          <div class="meta">${escapeHtml(b.category)} · ${escapeHtml(b.island)}${b.ownerEmail ? ' · ' + escapeHtml(b.ownerEmail) : ''}</div>
+          <div class="sub">${escapeHtml(b.desc || '')}</div>
+        </div>
+        <div class="btns">
+          <button class="btn" data-verify="${b.id}" data-current="${b.verified}">${b.verified ? 'Unverify' : 'Mark verified'}</button>
+          <button class="btn danger" data-del="${b.id}">Delete</button>
+        </div>
+      </div>`).join('');
+    wrap.querySelectorAll('[data-verify]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const current = btn.getAttribute('data-current') === 'true';
+        await adminApi('/api/admin/businesses/' + btn.getAttribute('data-verify'), { method:'PATCH', body:{verified: !current} });
+        loadBusinesses();
+      });
+    });
+    wrap.querySelectorAll('[data-del]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        await adminApi('/api/admin/businesses/' + btn.getAttribute('data-del'), { method:'DELETE' });
+        loadBusinesses();
+      });
+    });
+  }
+
+  async function loadAccounts(){
+    const r = await adminApi('/api/admin/accounts');
+    const wrap = document.getElementById('accountsList');
+    if(!r.ok){ wrap.innerHTML = `<div class="empty">${escapeHtml(r.error)}</div>`; return; }
+    if(!r.data.length){ wrap.innerHTML = `<div class="empty">No business accounts yet.</div>`; return; }
+    wrap.innerHTML = r.data.map(a => {
+      const effPro = a.isPro && a.proExpiry && a.proExpiry > Date.now();
+      return `
+      <div class="row-card">
+        <div>
+          <h3 style="font-size:16px;" class="mono">${escapeHtml(a.email)} <span class="badge ${effPro?'pro':'free'}">${effPro?'PRO':'FREE'}</span></h3>
+          <div class="meta">Joined ${fmtDate(a.createdAt)}${effPro ? ' · Pro expires ' + fmtDate(a.proExpiry) : ''}</div>
+        </div>
+        <div class="btns">
+          <button class="btn primary" data-grant="${a.email}">Grant / extend 30 days</button>
+          ${a.isPro ? `<button class="btn danger" data-revoke="${a.email}">Revoke Pro</button>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+    wrap.querySelectorAll('[data-grant]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        await adminApi('/api/admin/accounts/' + encodeURIComponent(btn.getAttribute('data-grant')) + '/grant-pro', { method:'POST' });
+        loadAccounts();
+      });
+    });
+    wrap.querySelectorAll('[data-revoke]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        await adminApi('/api/admin/accounts/' + encodeURIComponent(btn.getAttribute('data-revoke')) + '/revoke-pro', { method:'POST' });
+        loadAccounts();
+      });
+    });
+  }
+
+  function init(){
+    document.getElementById('syncIsland').innerHTML = ISLANDS.map(i=>`<option value="${i}">${i}</option>`).join('');
+    document.getElementById('filterIsland').innerHTML += ISLANDS.map(i=>`<option value="${i}">${i}</option>`).join('');
+    document.getElementById('filterIsland').addEventListener('change', loadBusinesses);
+    document.getElementById('filterSource').addEventListener('change', loadBusinesses);
+    document.getElementById('syncBtn').addEventListener('click', async ()=>{
+      const island = document.getElementById('syncIsland').value;
+      const statusEl = document.getElementById('syncStatus');
+      statusEl.textContent = "Syncing…";
+      const r = await adminApi('/api/admin/sync-google/' + encodeURIComponent(island), { method:'POST' });
+      statusEl.textContent = r.ok ? `Added ${r.data.added} new listing(s).` : r.error;
+      if(r.ok) loadBusinesses();
+    });
+    document.getElementById('syncAllBtn').addEventListener('click', async ()=>{
+      const statusEl = document.getElementById('syncStatus');
+      statusEl.textContent = "Syncing every island — this takes a bit longer…";
+      const r = await adminApi('/api/admin/sync-google-all', { method:'POST' });
+      statusEl.textContent = r.ok ? `Added ${r.data.totalAdded} new listing(s) across all islands.` : r.error;
+      if(r.ok) loadBusinesses();
+    });
+    loadFlags();
+    loadBusinesses();
+    loadAccounts();
+  }
+})();
+</script>
+</body>
+</html>
