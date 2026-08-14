@@ -88,7 +88,8 @@ function seedState(){
     bizUsers: [],
     duplicateFlags: [],
     sessions: {},
-    googleSyncCache: {}
+    googleSyncCache: {},
+    unmatchedGoogle: []
   };
 }
 
@@ -109,6 +110,7 @@ async function dbRead(){
   const db = rows[0].data;
   // Backfill for databases created before islands moved into the DB.
   if(!db.atolls) db.atolls = SEED_ATOLLS;
+  if(!db.unmatchedGoogle) db.unmatchedGoogle = [];
   return db;
 }
 async function dbWrite(db){
@@ -459,7 +461,22 @@ async function syncIslandGoogle(db, atoll, island){
     for(const place of results){
       const exists = db.businesses.find(b => b.googlePlaceId === place.id);
       if(exists) continue;
-      if(!addressMentionsIsland(place.formattedAddress, island)){ skippedMismatch++; continue; }
+      if(!addressMentionsIsland(place.formattedAddress, island)){
+        skippedMismatch++;
+        // The same place often turns up as a mismatch for many different
+        // island searches (e.g. a Malé business showing up while searching
+        // every other island) — dedupe by place id so it's stored once for
+        // review, not once per island it happened to surface under.
+        const alreadyUnmatched = db.unmatchedGoogle.find(u => u.googlePlaceId === place.id);
+        if(!alreadyUnmatched){
+          db.unmatchedGoogle.push({
+            id: genId("u"), name: (place.displayName && place.displayName.text) || "Unnamed place", category,
+            desc: place.formattedAddress || "", contact: place.internationalPhoneNumber || place.nationalPhoneNumber || "",
+            googlePlaceId: place.id, foundSearchingAtoll: atoll, foundSearchingIsland: island, createdAt: Date.now()
+          });
+        }
+        continue;
+      }
       db.businesses.push({
         id: genId("g"), name: (place.displayName && place.displayName.text) || "Unnamed place", category, island,
         desc: place.formattedAddress || "", price:"", contact: place.internationalPhoneNumber || place.nationalPhoneNumber || "", ownerEmail:null,
@@ -516,10 +533,46 @@ app.post("/api/admin/google-data/clear", requireAdmin, h(async (req, res) => {
   const before = db.businesses.length;
   db.businesses = db.businesses.filter(b => b.source !== "google");
   const removed = before - db.businesses.length;
+  const unmatchedRemoved = db.unmatchedGoogle.length;
   db.googleSyncCache = {};
   db.duplicateFlags = [];
+  db.unmatchedGoogle = [];
   await dbWrite(db);
-  res.json({ removed });
+  res.json({ removed, unmatchedRemoved });
+}));
+
+// Places the sync found but skipped because their real address didn't match
+// the island being searched — kept here instead of discarded so an admin can
+// either assign them to the island they actually belong to, or discard them.
+app.get("/api/admin/unmatched", requireAdmin, h(async (req, res) => {
+  res.json(req.db.unmatchedGoogle);
+}));
+
+app.post("/api/admin/unmatched/:id/assign", requireAdmin, h(async (req, res) => {
+  const db = req.db;
+  const island = req.body.island;
+  const idx = db.unmatchedGoogle.findIndex(u => u.id === req.params.id);
+  if(idx === -1) return res.status(404).json({error:"Not found"});
+  if(!island || !flattenIslands(db.atolls).includes(island)) return res.status(400).json({error:"Unknown island"});
+  const u = db.unmatchedGoogle[idx];
+  const alreadyExists = db.businesses.find(b => b.googlePlaceId === u.googlePlaceId);
+  if(!alreadyExists){
+    db.businesses.push({
+      id: genId("g"), name: u.name, category: u.category, island,
+      desc: u.desc, price:"", contact: u.contact || "", ownerEmail:null,
+      verified:false, source:"google", googlePlaceId: u.googlePlaceId
+    });
+  }
+  db.unmatchedGoogle.splice(idx, 1);
+  await dbWrite(db);
+  res.json({ ok:true, alreadyExisted: !!alreadyExists });
+}));
+
+app.delete("/api/admin/unmatched/:id", requireAdmin, h(async (req, res) => {
+  const db = req.db;
+  db.unmatchedGoogle = db.unmatchedGoogle.filter(u => u.id !== req.params.id);
+  await dbWrite(db);
+  res.json({ ok:true });
 }));
 
 // Fetches one place's contact number directly, bypassing the text-search
