@@ -17,7 +17,6 @@
 const express = require("express");
 const cors = require("cors");
 const crypto = require("crypto");
-const https = require("https");
 const { Pool } = require("pg");
 
 const PORT = process.env.PORT || 8787;
@@ -39,7 +38,29 @@ const BIZ_FREE_LIMIT = 1;
 const BIZ_PRO_LIMIT = 10;
 const BIZ_PRO_DAYS = 30;
 
-const ISLANDS = ["Maafushi","Guraidhoo","Thulusdhoo","Ukulhas","Rasdhoo","Dhigurah","Dhangethi","Fulidhoo","Hulhumalé","Gulhi","Himmafushi","Male'"];
+const ATOLLS = [
+  {atoll:"Haa Alif Atoll", islands:["Dhiddhoo","Baarah","Filladhoo","Hoarafushi","Ihavandhoo","Kelaa","Maarandhoo","Muraidhoo","Thakandhoo","Utheemu","Vashafaru"]},
+  {atoll:"Haa Dhaalu Atoll", islands:["Kulhudhuffushi","Finey","Hanimaadhoo","Hirimaradhoo","Kunbifulhu","Kurinbi","Makunudhoo","Naivaadhoo","Nellaidhoo","Neykurendhoo","Nolhivaram","Nolhivaranfaru","Kumundhoo","Faridhoo"]},
+  {atoll:"Shaviyani Atoll", islands:["Funadhoo","Bileffahi","Feevah","Feydhoo","Foakaidhoo","Kanditheemu","Komandoo","Lhaimagu","Maroshi","Milandhoo","Narudhoo","Noomaraa"]},
+  {atoll:"Noonu Atoll", islands:["Manadhoo","Fohdhoo","Henbadhoo","Holhudhoo","Kendhikolhudhoo","Kudafari","Landhoo","Lhohi","Maafaru","Maalhendhoo","Miladhoo","Magoodhoo"]},
+  {atoll:"Raa Atoll", islands:["Ungoofaaru","Alifushi","Angolhitheem","Fainu","Hulhudhufaaru","Inguraidhoo","Inemaura","Kandholhudhoo","Maakurathu","Maduvvari","Meedhoo","Rasmaadhoo","Rasgetheemu","Vaadhoo"]},
+  {atoll:"Baa Atoll", islands:["Eydhafushi","Dharavandhoo","Dhonfanu","Feridhoo","Fulhadhoo","Goidhoo","Hithaadhoo","Kamadhoo","Kendhoo","Kihaadhoo","Kudarikilu","Maalhos","Thulhaadhoo"]},
+  {atoll:"Lhaviyani Atoll", islands:["Naifaru","Hinnavaru","Kurendhoo","Olhuvelifushi","Maafilaafushi"]},
+  {atoll:"Kaafu Atoll", islands:["Male'","Hulhumalé","Dhiffushi","Gulhi","Guraidhoo","Himmafushi","Huraa","Kaashidhoo","Maafushi","Thulusdhoo"]},
+  {atoll:"Alifu Alifu Atoll", islands:["Rasdhoo","Bodufulhadhoo","Feridhoo","Himandhoo","Maalhoss","Mathiveri","Thoddoo","Ukulhas"]},
+  {atoll:"Alifu Dhaalu Atoll", islands:["Mahibadhoo","Dhangethi","Dhigurah","Fenfushi","Hangnaameedhoo","Kunburudhoo","Migaahdhigoo","Maamigili","Omadhoo"]},
+  {atoll:"Vaavu Atoll", islands:["Felidhoo","Fulidhoo","Keyodhoo","Rakeedhoo","Thinadhoo"]},
+  {atoll:"Meemu Atoll", islands:["Muli","Dhiggaru","Kolhufushi","Maduvvari","Mulah","Naalaafushi","Veyvah"]},
+  {atoll:"Faafu Atoll", islands:["Nilandhoo","Bileddhoo","Dharanboodhoo","Magoodhoo","Feeali"]},
+  {atoll:"Dhaalu Atoll", islands:["Kudahuvadhoo","Bandidhoo","Gemendhoo","Hulhudheli","Meedhoo","Rinbudhoo"]},
+  {atoll:"Thaa Atoll", islands:["Veymandoo","Buruni","Dhiyamigili","Gaadhiffushi","Guraidhoo","Hirilandhoo","Kandoodhoo","Kinbidhoo","Madifushi","Omadhoo","Thimarafushi","Vandhoo","Dandhoo"]},
+  {atoll:"Laamu Atoll", islands:["Fonadhoo","Gan","Isdhoo","Kalaidhoo","Kunahandhoo","Maabaidhoo","Maamendhoo","Maavah","Mundoo","Hithadhoo"]},
+  {atoll:"Gaafu Alif Atoll", islands:["Vilingili","Dhaandhoo","Devvadhoo","Gemanafushi","Kandhuhulhudhoo","Kolamaafushi","Maamendhoo","Nilandhoo"]},
+  {atoll:"Gaafu Dhaalu Atoll", islands:["Thinadhoo","Faresmaathoda","Fiyoari","Gadhdhoo","Hoadhedhdhoo","Madaveli","Nadallaa","Rathafandhoo","Vaadhoo"]},
+  {atoll:"Gnaviyani Atoll", islands:["Fuvahmulah"]},
+  {atoll:"Seenu Atoll", islands:["Hithadhoo","Feydhoo","Hulhudhoo","Maradhoo","Maradhoofeydhoo","Meedhoo"]}
+];
+const ISLANDS = ATOLLS.reduce((acc,a)=>acc.concat(a.islands), []);
 const CATEGORIES = ["Guesthouses","Hotels & Resorts","Cafés & Restaurants","Excursions & Dive","Shops & Rentals","Attractions & Activities"];
 const CATEGORY_QUERY = {
   "Guesthouses": "guesthouses",
@@ -357,15 +378,15 @@ app.post("/api/admin/accounts/:email/revoke-pro", requireAdmin, h(async (req, re
 async function syncIslandGoogle(db, island){
   let added = 0;
   for(const category of CATEGORIES){
-    const query = encodeURIComponent(CATEGORY_QUERY[category] + " in " + island + " Maldives");
+    const query = CATEGORY_QUERY[category] + " in " + island + " Maldives";
     const results = await placesTextSearch(query);
     for(const place of results){
-      const exists = db.businesses.find(b => b.googlePlaceId === place.place_id);
+      const exists = db.businesses.find(b => b.googlePlaceId === place.id);
       if(exists) continue;
       db.businesses.push({
-        id: genId("g"), name: place.name, category, island,
-        desc: place.formatted_address || "", price:"", contact:"", ownerEmail:null,
-        verified:false, source:"google", googlePlaceId: place.place_id
+        id: genId("g"), name: (place.displayName && place.displayName.text) || "Unnamed place", category, island,
+        desc: place.formattedAddress || "", price:"", contact:"", ownerEmail:null,
+        verified:false, source:"google", googlePlaceId: place.id
       });
       added++;
     }
@@ -399,27 +420,25 @@ app.post("/api/admin/sync-google-all", requireAdmin, h(async (req, res) => {
   res.json({ perIsland, totalAdded: Object.values(perIsland).reduce((a,b)=>a+b,0) });
 }));
 
-function placesTextSearch(encodedQuery){
-  return new Promise((resolve, reject) => {
-    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodedQuery}&key=${GOOGLE_PLACES_API_KEY}`;
-    https.get(url, (r) => {
-      let data = "";
-      r.on("data", chunk => data += chunk);
-      r.on("end", () => {
-        try{
-          const parsed = JSON.parse(data);
-          // Google returns HTTP 200 even on auth/billing failures — the real
-          // outcome is in `status`. Only OK and ZERO_RESULTS mean "the request
-          // worked"; anything else is a config problem worth surfacing.
-          if(parsed.status && parsed.status !== "OK" && parsed.status !== "ZERO_RESULTS"){
-            reject(new Error(`Google Places returned ${parsed.status}${parsed.error_message ? ": " + parsed.error_message : ""}`));
-            return;
-          }
-          resolve(parsed.results || []);
-        }catch(e){ reject(e); }
-      });
-    }).on("error", reject);
+// Uses Places API (New) — Google's current text search product, not the
+// legacy "Places API". These are two separate things to enable/restrict in
+// Google Cloud; this app only ever calls the New one.
+async function placesTextSearch(query){
+  const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
+      "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress"
+    },
+    body: JSON.stringify({ textQuery: query })
   });
+  const data = await res.json().catch(() => ({}));
+  if(!res.ok){
+    const msg = (data.error && data.error.message) || res.statusText;
+    throw new Error(`Google Places returned ${res.status}: ${msg}`);
+  }
+  return data.places || [];
 }
 
 // health check — handy for Render, and for confirming the DB connection came up
