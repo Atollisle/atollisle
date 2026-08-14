@@ -342,6 +342,8 @@ app.patch("/api/admin/businesses/:id", requireAdmin, h(async (req, res) => {
   const b = db.businesses.find(x => x.id === req.params.id);
   if(!b) return res.status(404).json({error:"Not found"});
   if(typeof req.body.verified === "boolean") b.verified = req.body.verified;
+  if(typeof req.body.island === "string" && ISLANDS.includes(req.body.island)) b.island = req.body.island;
+  if(typeof req.body.category === "string" && CATEGORIES.includes(req.body.category)) b.category = req.body.category;
   await dbWrite(db);
   res.json(b);
 }));
@@ -375,14 +377,27 @@ app.post("/api/admin/accounts/:email/revoke-pro", requireAdmin, h(async (req, re
 // Pulls public listings from Google Places for one island and merges any new
 // ones in as source:"google". Requires GOOGLE_PLACES_API_KEY. Safe to call
 // repeatedly — skips places already synced by place_id.
+//
+// Google's text search sometimes returns a place that isn't actually on the
+// searched island (a nearby/similarly-matched result) — if the returned
+// address doesn't mention the island we searched for, skip it rather than
+// filing it under the wrong island.
+function addressMentionsIsland(address, island){
+  if(!address) return false;
+  const norm = s => s.toLowerCase().replace(/['’]/g, "");
+  return norm(address).includes(norm(island));
+}
+
 async function syncIslandGoogle(db, island){
   let added = 0;
+  let skippedMismatch = 0;
   for(const category of CATEGORIES){
     const query = CATEGORY_QUERY[category] + " in " + island + " Maldives";
     const results = await placesTextSearch(query);
     for(const place of results){
       const exists = db.businesses.find(b => b.googlePlaceId === place.id);
       if(exists) continue;
+      if(!addressMentionsIsland(place.formattedAddress, island)){ skippedMismatch++; continue; }
       db.businesses.push({
         id: genId("g"), name: (place.displayName && place.displayName.text) || "Unnamed place", category, island,
         desc: place.formattedAddress || "", price:"", contact:"", ownerEmail:null,
@@ -392,7 +407,7 @@ async function syncIslandGoogle(db, island){
     }
   }
   db.googleSyncCache[island] = Date.now();
-  return added;
+  return { added, skippedMismatch };
 }
 
 app.post("/api/admin/sync-google/:island", requireAdmin, h(async (req, res) => {
@@ -400,9 +415,9 @@ app.post("/api/admin/sync-google/:island", requireAdmin, h(async (req, res) => {
   const island = req.params.island;
   if(!ISLANDS.includes(island)) return res.status(400).json({error:"Unknown island"});
   const db = req.db;
-  const added = await syncIslandGoogle(db, island);
+  const { added, skippedMismatch } = await syncIslandGoogle(db, island);
   await dbWrite(db);
-  res.json({ added });
+  res.json({ added, skippedMismatch });
 }));
 
 // Syncs every island in one call — the comprehensive "list everything on the
@@ -413,11 +428,14 @@ app.post("/api/admin/sync-google-all", requireAdmin, h(async (req, res) => {
   if(!GOOGLE_PLACES_API_KEY) return res.status(400).json({error:"GOOGLE_PLACES_API_KEY is not set on the server"});
   const db = req.db;
   const perIsland = {};
+  let totalSkippedMismatch = 0;
   for(const island of ISLANDS){
-    perIsland[island] = await syncIslandGoogle(db, island);
+    const r = await syncIslandGoogle(db, island);
+    perIsland[island] = r.added;
+    totalSkippedMismatch += r.skippedMismatch;
   }
   await dbWrite(db);
-  res.json({ perIsland, totalAdded: Object.values(perIsland).reduce((a,b)=>a+b,0) });
+  res.json({ perIsland, totalAdded: Object.values(perIsland).reduce((a,b)=>a+b,0), totalSkippedMismatch });
 }));
 
 // Uses Places API (New) — Google's current text search product, not the
