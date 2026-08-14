@@ -30,16 +30,28 @@
     background-color:var(--sand);
     background-image: radial-gradient(rgba(31,138,140,0.09) 1.2px, transparent 1.2px);
     background-size: 20px 20px;
+    animation: dotDrift 16s linear infinite;
     color:var(--charcoal);
     font-family:'Work Sans', sans-serif;
     min-height:100vh;
+    position:relative;
+    overflow-x:hidden;
   }
+  @keyframes dotDrift{ from{ background-position:0 0; } to{ background-position:20px 20px; } }
+  .bg-blob{ position:fixed; border-radius:50%; filter:blur(70px); pointer-events:none; z-index:0; }
+  .bg-blob.b1{ width:340px; height:340px; background:radial-gradient(circle, var(--teal), transparent 70%); opacity:0.30; top:-70px; left:-90px; animation:blobDrift1 26s ease-in-out infinite; }
+  .bg-blob.b2{ width:300px; height:300px; background:radial-gradient(circle, var(--coral), transparent 70%); opacity:0.24; bottom:-70px; right:-70px; animation:blobDrift2 32s ease-in-out infinite; }
+  .bg-blob.b3{ width:260px; height:260px; background:radial-gradient(circle, #F5C34D, transparent 70%); opacity:0.18; top:45%; right:-100px; animation:blobDrift3 22s ease-in-out infinite; }
+  @keyframes blobDrift1{ 0%,100%{ transform:translate(0,0) scale(1); } 50%{ transform:translate(70px,90px) scale(1.15); } }
+  @keyframes blobDrift2{ 0%,100%{ transform:translate(0,0) scale(1); } 50%{ transform:translate(-80px,-60px) scale(1.1); } }
+  @keyframes blobDrift3{ 0%,100%{ transform:translate(0,0) scale(1); } 50%{ transform:translate(-50px,70px) scale(0.9); } }
   .shell{
     max-width:480px;
     margin:0 auto;
     min-height:100vh;
     background:transparent;
     position:relative;
+    z-index:1;
     display:flex;
     flex-direction:column;
   }
@@ -404,17 +416,17 @@
     .topbar{padding:16px 40px; position:sticky;}
     .content{padding:24px 40px 60px; max-width:1180px; margin:0 auto;}
     .chips{flex-wrap:wrap; overflow:visible;}
-    #listings, #eventsList, #myListings{display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px;}
+    #listings, #eventsList{display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px;}
     .card{margin-bottom:0;}
-    .bottomnav{position:sticky; top:0; bottom:auto; max-width:none; justify-content:flex-start; padding:0 40px; border-top:none; border-bottom:1px solid rgba(255,255,255,0.1);}
-    .navbtn{flex:0 0 auto; padding:14px 22px;}
-    .navbtn.active{padding-top:12px;}
     .sheet{max-width:520px; border-radius:16px; margin-bottom:6vh;}
     .overlay{align-items:center;}
   }
 </style>
 </head>
 <body>
+<div class="bg-blob b1"></div>
+<div class="bg-blob b2"></div>
+<div class="bg-blob b3"></div>
 <div class="shell" id="shell">
 
   <!-- BOARDING SCREEN -->
@@ -487,7 +499,6 @@
     <div class="bottomnav">
       <button class="navbtn active" data-view="explore" data-i18n="navExplore">Explore</button>
       <button class="navbtn" data-view="events" data-i18n="navEvents">Events</button>
-      <a class="navbtn" href="business.html" data-i18n="navPortal" style="text-decoration:none; display:flex; align-items:center; justify-content:center;">Business Portal</a>
     </div>
   </div>
 
