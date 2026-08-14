@@ -53,6 +53,25 @@
   .filterbar{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;}
   .filterbar select, .filterbar input{padding:8px 10px; border-radius:8px; border:1px solid var(--line); font-family:'Work Sans',sans-serif; font-size:13px; background:var(--white);}
   .sync-row{display:flex; gap:8px; align-items:center; margin-bottom:16px; flex-wrap:wrap;}
+  .field-btn{
+    padding:9px 14px; border-radius:8px; border:1px solid var(--line); background:var(--white); color:var(--charcoal);
+    font-family:'IBM Plex Mono',monospace; font-size:12px; cursor:pointer;
+  }
+  .field-btn.placeholder{ color:#7c8a85; }
+  /* ---------- themed popup (island picker) ---------- */
+  .overlay{ position:fixed; inset:0; background:rgba(11,46,53,0.6); display:flex; align-items:center; justify-content:center; z-index:50; padding:20px; }
+  .sheet{ background:var(--sand); width:100%; max-width:440px; max-height:80vh; overflow-y:auto; border-radius:16px; }
+  .sheet-head{ background:linear-gradient(135deg, var(--ink), var(--ink-2)); color:var(--white); padding:20px 20px 16px; position:relative; }
+  .sheet-head .eyebrow{ color:#7FCFCB; }
+  .sheet-head h2{ color:var(--white); font-size:22px; margin-top:6px; }
+  .sheet-body{ padding:18px 20px 22px; }
+  .close-x{ position:absolute; top:14px; right:16px; background:rgba(255,255,255,0.12); border:none; width:26px; height:26px; border-radius:50%; font-size:16px; color:var(--white); cursor:pointer; }
+  .search-input{ width:100%; padding:11px 14px; border-radius:8px; border:1px solid var(--line); font-family:'Work Sans', sans-serif; font-size:14px; background:var(--white); color:var(--charcoal); margin-bottom:12px; }
+  .picker-group{ margin-bottom:4px; }
+  .picker-atoll-heading{ font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--teal); padding:12px 4px 4px; }
+  .picker-row{ display:flex; justify-content:space-between; align-items:center; padding:11px 8px; border-bottom:1px solid var(--line); cursor:pointer; font-size:14px; }
+  .picker-row:hover{ background:var(--sand-2); }
+  .picker-atoll{ font-family:'IBM Plex Mono', monospace; font-size:10px; color:#9aa39e; }
 </style>
 </head>
 <body>
@@ -99,13 +118,13 @@
   <!-- BUSINESSES -->
   <div class="panel" id="panel-businesses">
     <div class="sync-row">
-      <select id="syncIsland"></select>
+      <button class="field-btn" id="syncIslandBtn" data-island="Maafushi">Maafushi</button>
       <button class="btn primary" id="syncBtn">Sync this island</button>
       <button class="btn primary" id="syncAllBtn">Sync ALL islands</button>
       <span class="mono" id="syncStatus" style="font-size:11.5px; color:#7c8a85;"></span>
     </div>
     <div class="filterbar">
-      <select id="filterIsland"><option value="">All islands</option></select>
+      <button class="field-btn placeholder" id="filterIslandBtn" data-island="">All islands</button>
       <select id="filterSource"><option value="">All sources</option><option value="owner">Owner-listed</option><option value="google">Google-sourced</option></select>
     </div>
     <div id="businessesList"></div>
@@ -119,12 +138,85 @@
 
 <script>
 (function(){
-  const ISLANDS = ["Maafushi","Guraidhoo","Thulusdhoo","Ukulhas","Rasdhoo","Dhigurah","Dhangethi","Fulidhoo","Hulhumalé","Gulhi","Himmafushi","Male'"];
+  const ATOLLS = [
+    {atoll:"Haa Alif Atoll", islands:["Dhiddhoo","Baarah","Filladhoo","Hoarafushi","Ihavandhoo","Kelaa","Maarandhoo","Muraidhoo","Thakandhoo","Utheemu","Vashafaru"]},
+    {atoll:"Haa Dhaalu Atoll", islands:["Kulhudhuffushi","Finey","Hanimaadhoo","Hirimaradhoo","Kunbifulhu","Kurinbi","Makunudhoo","Naivaadhoo","Nellaidhoo","Neykurendhoo","Nolhivaram","Nolhivaranfaru","Kumundhoo","Faridhoo"]},
+    {atoll:"Shaviyani Atoll", islands:["Funadhoo","Bileffahi","Feevah","Feydhoo","Foakaidhoo","Kanditheemu","Komandoo","Lhaimagu","Maroshi","Milandhoo","Narudhoo","Noomaraa"]},
+    {atoll:"Noonu Atoll", islands:["Manadhoo","Fohdhoo","Henbadhoo","Holhudhoo","Kendhikolhudhoo","Kudafari","Landhoo","Lhohi","Maafaru","Maalhendhoo","Miladhoo","Magoodhoo"]},
+    {atoll:"Raa Atoll", islands:["Ungoofaaru","Alifushi","Angolhitheem","Fainu","Hulhudhufaaru","Inguraidhoo","Inemaura","Kandholhudhoo","Maakurathu","Maduvvari","Meedhoo","Rasmaadhoo","Rasgetheemu","Vaadhoo"]},
+    {atoll:"Baa Atoll", islands:["Eydhafushi","Dharavandhoo","Dhonfanu","Feridhoo","Fulhadhoo","Goidhoo","Hithaadhoo","Kamadhoo","Kendhoo","Kihaadhoo","Kudarikilu","Maalhos","Thulhaadhoo"]},
+    {atoll:"Lhaviyani Atoll", islands:["Naifaru","Hinnavaru","Kurendhoo","Olhuvelifushi","Maafilaafushi"]},
+    {atoll:"Kaafu Atoll", islands:["Male'","Hulhumalé","Dhiffushi","Gulhi","Guraidhoo","Himmafushi","Huraa","Kaashidhoo","Maafushi","Thulusdhoo"]},
+    {atoll:"Alifu Alifu Atoll", islands:["Rasdhoo","Bodufulhadhoo","Feridhoo","Himandhoo","Maalhoss","Mathiveri","Thoddoo","Ukulhas"]},
+    {atoll:"Alifu Dhaalu Atoll", islands:["Mahibadhoo","Dhangethi","Dhigurah","Fenfushi","Hangnaameedhoo","Kunburudhoo","Migaahdhigoo","Maamigili","Omadhoo"]},
+    {atoll:"Vaavu Atoll", islands:["Felidhoo","Fulidhoo","Keyodhoo","Rakeedhoo","Thinadhoo"]},
+    {atoll:"Meemu Atoll", islands:["Muli","Dhiggaru","Kolhufushi","Maduvvari","Mulah","Naalaafushi","Veyvah"]},
+    {atoll:"Faafu Atoll", islands:["Nilandhoo","Bileddhoo","Dharanboodhoo","Magoodhoo","Feeali"]},
+    {atoll:"Dhaalu Atoll", islands:["Kudahuvadhoo","Bandidhoo","Gemendhoo","Hulhudheli","Meedhoo","Rinbudhoo"]},
+    {atoll:"Thaa Atoll", islands:["Veymandoo","Buruni","Dhiyamigili","Gaadhiffushi","Guraidhoo","Hirilandhoo","Kandoodhoo","Kinbidhoo","Madifushi","Omadhoo","Thimarafushi","Vandhoo","Dandhoo"]},
+    {atoll:"Laamu Atoll", islands:["Fonadhoo","Gan","Isdhoo","Kalaidhoo","Kunahandhoo","Maabaidhoo","Maamendhoo","Maavah","Mundoo","Hithadhoo"]},
+    {atoll:"Gaafu Alif Atoll", islands:["Vilingili","Dhaandhoo","Devvadhoo","Gemanafushi","Kandhuhulhudhoo","Kolamaafushi","Maamendhoo","Nilandhoo"]},
+    {atoll:"Gaafu Dhaalu Atoll", islands:["Thinadhoo","Faresmaathoda","Fiyoari","Gadhdhoo","Hoadhedhdhoo","Madaveli","Nadallaa","Rathafandhoo","Vaadhoo"]},
+    {atoll:"Gnaviyani Atoll", islands:["Fuvahmulah"]},
+    {atoll:"Seenu Atoll", islands:["Hithadhoo","Feydhoo","Hulhudhoo","Maradhoo","Maradhoofeydhoo","Meedhoo"]}
+  ];
+  const ISLANDS = ATOLLS.reduce((acc,a)=>acc.concat(a.islands), []);
   const API_BASE = "https://atollisle.onrender.com"; // same value as in index.html
 
   let passcode = null;
 
   function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function escapeAttr(s){ return escapeHtml(s); }
+
+  function renderPickerList(container, filterText, onSelect){
+    const filter = (filterText || '').trim().toLowerCase();
+    if(filter){
+      const matches = [];
+      ATOLLS.forEach(a => a.islands.forEach(isl => { if(isl.toLowerCase().includes(filter)) matches.push({isl, atoll:a.atoll}); }));
+      container.innerHTML = matches.length ? matches.map(m => `
+        <div class="picker-row" data-island="${escapeAttr(m.isl)}"><span>${escapeHtml(m.isl)}</span><span class="picker-atoll">${escapeHtml(m.atoll)}</span></div>
+      `).join('') : `<div class="empty">No islands match "${escapeHtml(filterText)}"</div>`;
+    } else {
+      container.innerHTML = ATOLLS.map(a => `
+        <div class="picker-group">
+          <div class="picker-atoll-heading">${escapeHtml(a.atoll)}</div>
+          ${a.islands.map(isl => `<div class="picker-row" data-island="${escapeAttr(isl)}"><span>${escapeHtml(isl)}</span></div>`).join('')}
+        </div>`).join('');
+    }
+    container.querySelectorAll('.picker-row').forEach(row => {
+      row.addEventListener('click', () => onSelect(row.getAttribute('data-island')));
+    });
+  }
+
+  function openIslandPicker(onSelect, opts){
+    opts = opts || {};
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.innerHTML = `
+      <div class="sheet">
+        <div class="sheet-head">
+          <button class="close-x" id="islandPickerClose">&times;</button>
+          <span class="eyebrow">Select island</span>
+          <h2>${opts.title || 'Choose an island'}</h2>
+        </div>
+        <div class="sheet-body">
+          <input type="text" id="islandPickerSearch" class="search-input" placeholder="Search islands…">
+          <div id="islandPickerResults" style="max-height:48vh; overflow-y:auto;"></div>
+          ${opts.allowAll ? `<div class="picker-row" data-island="" style="border-top:2px solid var(--line); margin-top:6px; font-weight:600;">All islands</div>` : ''}
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.remove(); });
+    document.getElementById('islandPickerClose').addEventListener('click', ()=>overlay.remove());
+    const allRow = overlay.querySelector('.sheet-body > .picker-row[data-island=""]');
+    if(allRow) allRow.addEventListener('click', ()=>{ overlay.remove(); onSelect(''); });
+    const resultsEl = document.getElementById('islandPickerResults');
+    const searchEl = document.getElementById('islandPickerSearch');
+    function refresh(){ renderPickerList(resultsEl, searchEl.value, (isl)=>{ overlay.remove(); onSelect(isl); }); }
+    searchEl.addEventListener('input', refresh);
+    refresh();
+    searchEl.focus();
+  }
   function fmtDate(ms){ return ms ? new Date(ms).toLocaleDateString(undefined, {day:'numeric', month:'short', year:'numeric'}) : '—'; }
 
   async function adminApi(path, opts){
@@ -199,7 +291,7 @@
     const r = await adminApi('/api/admin/businesses');
     const wrap = document.getElementById('businessesList');
     if(!r.ok){ wrap.innerHTML = `<div class="empty">${escapeHtml(r.error)}</div>`; return; }
-    const islandFilter = document.getElementById('filterIsland').value;
+    const islandFilter = document.getElementById('filterIslandBtn').getAttribute('data-island');
     const sourceFilter = document.getElementById('filterSource').value;
     let list = r.data;
     if(islandFilter) list = list.filter(b => b.island === islandFilter);
@@ -266,12 +358,25 @@
   }
 
   function init(){
-    document.getElementById('syncIsland').innerHTML = ISLANDS.map(i=>`<option value="${i}">${i}</option>`).join('');
-    document.getElementById('filterIsland').innerHTML += ISLANDS.map(i=>`<option value="${i}">${i}</option>`).join('');
-    document.getElementById('filterIsland').addEventListener('change', loadBusinesses);
+    document.getElementById('syncIslandBtn').addEventListener('click', ()=>{
+      openIslandPicker((isl)=>{
+        const btn = document.getElementById('syncIslandBtn');
+        btn.textContent = isl;
+        btn.setAttribute('data-island', isl);
+      }, { title: 'Island to sync' });
+    });
+    document.getElementById('filterIslandBtn').addEventListener('click', ()=>{
+      openIslandPicker((isl)=>{
+        const btn = document.getElementById('filterIslandBtn');
+        btn.textContent = isl || 'All islands';
+        btn.setAttribute('data-island', isl);
+        btn.classList.toggle('placeholder', !isl);
+        loadBusinesses();
+      }, { title: 'Filter by island', allowAll: true });
+    });
     document.getElementById('filterSource').addEventListener('change', loadBusinesses);
     document.getElementById('syncBtn').addEventListener('click', async ()=>{
-      const island = document.getElementById('syncIsland').value;
+      const island = document.getElementById('syncIslandBtn').getAttribute('data-island');
       const statusEl = document.getElementById('syncStatus');
       statusEl.textContent = "Syncing…";
       const r = await adminApi('/api/admin/sync-google/' + encodeURIComponent(island), { method:'POST' });
