@@ -68,10 +68,27 @@
   .close-x{ position:absolute; top:14px; right:16px; background:rgba(255,255,255,0.12); border:none; width:26px; height:26px; border-radius:50%; font-size:16px; color:var(--white); cursor:pointer; }
   .search-input{ width:100%; padding:11px 14px; border-radius:8px; border:1px solid var(--line); font-family:'Work Sans', sans-serif; font-size:14px; background:var(--white); color:var(--charcoal); margin-bottom:12px; }
   .picker-group{ margin-bottom:4px; }
-  .picker-atoll-heading{ font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--teal); padding:12px 4px 4px; }
+  .picker-atoll-toggle{
+    width:100%; display:flex; align-items:center; justify-content:space-between;
+    background:transparent; border:none; cursor:pointer; text-align:left;
+    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--teal); padding:12px 4px 4px;
+  }
+  .picker-atoll-toggle .chevron{ font-size:11px; transition:transform 0.2s ease; display:inline-block; }
+  .picker-atoll-toggle.open .chevron{ transform:rotate(90deg); }
+  .picker-atoll-body{ overflow:hidden; max-height:0; transition:max-height 0.25s ease; }
+  .picker-atoll-body.open{ max-height:2000px; }
   .picker-row{ display:flex; justify-content:space-between; align-items:center; padding:11px 8px; border-bottom:1px solid var(--line); cursor:pointer; font-size:14px; }
   .picker-row:hover{ background:var(--sand-2); }
   .picker-atoll{ font-family:'IBM Plex Mono', monospace; font-size:10px; color:#9aa39e; }
+  .islands-atoll-toggle{
+    width:100%; display:flex; align-items:center; justify-content:space-between;
+    background:transparent; border:none; cursor:pointer; text-align:left; padding:0 0 10px;
+  }
+  .islands-atoll-toggle .chevron{ font-size:13px; color:var(--teal); transition:transform 0.2s ease; }
+  .islands-atoll-toggle.open .chevron{ transform:rotate(90deg); }
+  .islands-atoll-body{ overflow:hidden; max-height:0; transition:max-height 0.3s ease; }
+  .islands-atoll-body.open{ max-height:2000px; }
 </style>
 </head>
 <body>
@@ -107,6 +124,7 @@
     <button class="tab active" data-panel="flags">Duplicate Flags <span class="count" id="flagCount">0</span></button>
     <button class="tab" data-panel="businesses">Businesses</button>
     <button class="tab" data-panel="accounts">Business Accounts</button>
+    <button class="tab" data-panel="islands">Islands</button>
   </div>
 
   <!-- DUPLICATE FLAGS -->
@@ -118,9 +136,11 @@
   <!-- BUSINESSES -->
   <div class="panel" id="panel-businesses">
     <div class="sync-row">
-      <button class="field-btn" id="syncIslandBtn" data-island="Maafushi">Maafushi</button>
+      <button class="field-btn" id="syncIslandBtn" data-island="Maafushi" data-atoll="Kaafu Atoll & Malé">Maafushi</button>
       <button class="btn primary" id="syncBtn">Sync this island</button>
       <button class="btn primary" id="syncAllBtn">Sync ALL islands</button>
+      <button class="btn danger" id="clearGoogleBtn">Clear all Google data</button>
+      <button class="btn primary" id="backfillContactsBtn">Backfill contact numbers</button>
       <span class="mono" id="syncStatus" style="font-size:11.5px; color:#7c8a85;"></span>
     </div>
     <div class="filterbar">
@@ -134,34 +154,42 @@
   <div class="panel" id="panel-accounts">
     <div id="accountsList"></div>
   </div>
+
+  <!-- ISLANDS -->
+  <div class="panel" id="panel-islands">
+    <p style="font-size:13px; color:#3a4642; margin-top:0;">Renaming an island here updates it everywhere — the picker shown to tourists and business owners, and any existing businesses or events already filed under the old name. Because a few island names repeat across different atolls in the Maldives, the rename is scoped to the atoll you pick it from, but the businesses/events cascade matches on name only.</p>
+    <div id="islandsStatus" class="mono" style="font-size:11.5px; color:#7c8a85; margin-bottom:12px;"></div>
+    <div id="islandsList"></div>
+  </div>
 </div>
 
 <script>
 (function(){
-  const ATOLLS = [
-    {atoll:"Haa Alif Atoll", islands:["Dhiddhoo","Baarah","Filladhoo","Hoarafushi","Ihavandhoo","Kelaa","Maarandhoo","Muraidhoo","Thakandhoo","Utheemu","Vashafaru"]},
-    {atoll:"Haa Dhaalu Atoll", islands:["Kulhudhuffushi","Finey","Hanimaadhoo","Hirimaradhoo","Kunbifulhu","Kurinbi","Makunudhoo","Naivaadhoo","Nellaidhoo","Neykurendhoo","Nolhivaram","Nolhivaranfaru","Kumundhoo","Faridhoo"]},
-    {atoll:"Shaviyani Atoll", islands:["Funadhoo","Bileffahi","Feevah","Feydhoo","Foakaidhoo","Kanditheemu","Komandoo","Lhaimagu","Maroshi","Milandhoo","Narudhoo","Noomaraa"]},
-    {atoll:"Noonu Atoll", islands:["Manadhoo","Fohdhoo","Henbadhoo","Holhudhoo","Kendhikolhudhoo","Kudafari","Landhoo","Lhohi","Maafaru","Maalhendhoo","Miladhoo","Magoodhoo"]},
-    {atoll:"Raa Atoll", islands:["Ungoofaaru","Alifushi","Angolhitheem","Fainu","Hulhudhufaaru","Inguraidhoo","Inemaura","Kandholhudhoo","Maakurathu","Maduvvari","Meedhoo","Rasmaadhoo","Rasgetheemu","Vaadhoo"]},
-    {atoll:"Baa Atoll", islands:["Eydhafushi","Dharavandhoo","Dhonfanu","Feridhoo","Fulhadhoo","Goidhoo","Hithaadhoo","Kamadhoo","Kendhoo","Kihaadhoo","Kudarikilu","Maalhos","Thulhaadhoo"]},
-    {atoll:"Lhaviyani Atoll", islands:["Naifaru","Hinnavaru","Kurendhoo","Olhuvelifushi","Maafilaafushi"]},
-    {atoll:"Kaafu Atoll", islands:["Male'","Hulhumalé","Dhiffushi","Gulhi","Guraidhoo","Himmafushi","Huraa","Kaashidhoo","Maafushi","Thulusdhoo"]},
-    {atoll:"Alifu Alifu Atoll", islands:["Rasdhoo","Bodufulhadhoo","Feridhoo","Himandhoo","Maalhoss","Mathiveri","Thoddoo","Ukulhas"]},
-    {atoll:"Alifu Dhaalu Atoll", islands:["Mahibadhoo","Dhangethi","Dhigurah","Fenfushi","Hangnaameedhoo","Kunburudhoo","Migaahdhigoo","Maamigili","Omadhoo"]},
+  // Fallback only — the live list comes from the API so Super Admin renames apply everywhere.
+  let ATOLLS = [
+    {atoll:"Haa Alif Atoll", islands:["Baarah","Dhiddhoo","Filladhoo","Hoarafushi","Ihavandhoo","Kelaa","Maarandhoo","Mulhadhoo","Muraidhoo","Thakandhoo","Thuraakunu","Utheemu","Vashafaru","Uligan"]},
+    {atoll:"Haa Dhaalu Atoll", islands:["Finey","Hirilandhoo","Hanimaadhoo","Kattakuredhoo","Kulhudhuffushi","Kumundhoo","Kurinbi","Makunudhoo","Navaidhoo","Nellaidhoo","Neykurendhoo","Nolhivaram","Nolhivaranfaru","Vaikaradhoo"]},
+    {atoll:"Shaviyani Atoll", islands:["Bileffahi","Feevah","Feydhoo","Foakaidhoo","Funadhoo","Goidhoo","Kanditheemu","Komandoo","Lhaimagu","Maaungoodhoo","Narudhoo","Noomaraa","Milandhoo","Maroshi"]},
+    {atoll:"Noonu Atoll", islands:["Foddhoo","Henbadhoo","Holhudhoo","Kendhikulhudhoo","Kudafari","Landhoo","Lhohi","Maalhendhoo","Magoodhoo","Manadhoo","Miladhoo","Velidhoo"]},
+    {atoll:"Raa Atoll", islands:["Alifushi","Angolhitheemu","Fainu","Hulhudhuffaaru","Inguraidhoo","Innamaadhoo","Dhuvaafaru","Kandholhudhoo","Kinnolhas","Maakurathu","Maduvvari","Meedhoo","Rasgetheemu","Rasmadhoo","Ungoofaaru","Vaadhoo"]},
+    {atoll:"Baa Atoll", islands:["Dharavandhoo","Dhonfanu","Eydafushi","Fehendhoo","Fulhadhoo","Goidhoo","Hitheadhoo","Kamadhoo","Kendhoo","Kihaadhoo","Kudarikilu","Maalhos","Thulhaadhoo"]},
+    {atoll:"Lhaviyani Atoll", islands:["Hinnavaru","Kurendhoo","Maafilaafushi","Naifaru","Olhuvelifushi"]},
+    {atoll:"Kaafu Atoll & Malé", islands:["Malé","Villingili","Hulhumalé","Hulhulé","Dhiffushi","Gaafaru","Gulhi","Guraidhoo","Himmafushi","Huraa","Kaashidhoo","Maafushi","Thulusdhoo"]},
+    {atoll:"Alif Alif Atoll", islands:["Bodufolhudhoo","Feridhoo","Himandhoo","Mathiveri","Rasdhoo","Thoddoo","Ukulhas","Maalhos"]},
+    {atoll:"Alif Dhaal Atoll", islands:["Dhigurah","Fenfushi","Hangnaameedhoo","Kunburudhoo","Maamigili","Mahibadhoo","Mandhoo","Omadhoo","Dhangethi","Dhidhdhoo"]},
     {atoll:"Vaavu Atoll", islands:["Felidhoo","Fulidhoo","Keyodhoo","Rakeedhoo","Thinadhoo"]},
-    {atoll:"Meemu Atoll", islands:["Muli","Dhiggaru","Kolhufushi","Maduvvari","Mulah","Naalaafushi","Veyvah"]},
-    {atoll:"Faafu Atoll", islands:["Nilandhoo","Bileddhoo","Dharanboodhoo","Magoodhoo","Feeali"]},
-    {atoll:"Dhaalu Atoll", islands:["Kudahuvadhoo","Bandidhoo","Gemendhoo","Hulhudheli","Meedhoo","Rinbudhoo"]},
-    {atoll:"Thaa Atoll", islands:["Veymandoo","Buruni","Dhiyamigili","Gaadhiffushi","Guraidhoo","Hirilandhoo","Kandoodhoo","Kinbidhoo","Madifushi","Omadhoo","Thimarafushi","Vandhoo","Dandhoo"]},
-    {atoll:"Laamu Atoll", islands:["Fonadhoo","Gan","Isdhoo","Kalaidhoo","Kunahandhoo","Maabaidhoo","Maamendhoo","Maavah","Mundoo","Hithadhoo"]},
-    {atoll:"Gaafu Alif Atoll", islands:["Vilingili","Dhaandhoo","Devvadhoo","Gemanafushi","Kandhuhulhudhoo","Kolamaafushi","Maamendhoo","Nilandhoo"]},
-    {atoll:"Gaafu Dhaalu Atoll", islands:["Thinadhoo","Faresmaathoda","Fiyoari","Gadhdhoo","Hoadhedhdhoo","Madaveli","Nadallaa","Rathafandhoo","Vaadhoo"]},
+    {atoll:"Meemu Atoll", islands:["Dhiggaru","Kolhufushi","Maduvvaree","Mulah","Muli","Naalaafushi","Raimmandhoo","Veyvah"]},
+    {atoll:"Faafu Atoll", islands:["Feeali","Bileddhoo","Dharanboodhoo","Magoodhoo","Nilandhoo"]},
+    {atoll:"Dhaalu Atoll", islands:["Bandidhoo","Gemendhoo","Huluhedheli","Kudahuvadhoo","Maaenboodhoo","Meedhoo","Rinbudhoo"]},
+    {atoll:"Thaa Atoll", islands:["Buruni","Dhiyamigili","Gaadhiffushi","Guraidhoo","Hirilandhoo","Kandoodhoo","Kinbidhoo","Madifushi","Omadhoo","Thimarafushi","Vandhoo","Veimandoo","Vilufushi"]},
+    {atoll:"Laamu Atoll", islands:["Dhanbidhoo","Fonadhoo","Gaadhoo","Gan","Isdhoo","Kalaidhoo","Kunahandhoo","Maabaidhoo","Maamendhoo","Maavah","Mundoo"]},
+    {atoll:"Gaafu Alifu Atoll", islands:["Dhaandhoo","Dhevvadhoo","Gemanafushi","Kanduhulhudhoo","Kolamaafushi","Kondey","Maamendhoo","Nilandhoo","Villingili"]},
+    {atoll:"Gaafu Dhaalu Atoll", islands:["Fares-Maathoda","Fiyoari","Gaddhoo","Hoandeddhoo","Nadella","Rathafandhoo","Thinadhoo","Vaadhoo","Madaveli"]},
     {atoll:"Gnaviyani Atoll", islands:["Fuvahmulah"]},
-    {atoll:"Seenu Atoll", islands:["Hithadhoo","Feydhoo","Hulhudhoo","Maradhoo","Maradhoofeydhoo","Meedhoo"]}
+    {atoll:"Seenu Atoll", islands:["Feydhoo","Hithadhoo","Hulhudhoo","Meedhoo","Maradhoo","Maradhoo-Feydhoo"]}
   ];
-  const ISLANDS = ATOLLS.reduce((acc,a)=>acc.concat(a.islands), []);
   const API_BASE = "https://atollisle.onrender.com"; // same value as in index.html
+
 
   let passcode = null;
 
@@ -174,18 +202,29 @@
       const matches = [];
       ATOLLS.forEach(a => a.islands.forEach(isl => { if(isl.toLowerCase().includes(filter)) matches.push({isl, atoll:a.atoll}); }));
       container.innerHTML = matches.length ? matches.map(m => `
-        <div class="picker-row" data-island="${escapeAttr(m.isl)}"><span>${escapeHtml(m.isl)}</span><span class="picker-atoll">${escapeHtml(m.atoll)}</span></div>
+        <div class="picker-row" data-island="${escapeAttr(m.isl)}" data-atoll="${escapeAttr(m.atoll)}"><span>${escapeHtml(m.isl)}</span><span class="picker-atoll">${escapeHtml(m.atoll)}</span></div>
       `).join('') : `<div class="empty">No islands match "${escapeHtml(filterText)}"</div>`;
+      container.querySelectorAll('.picker-row').forEach(row => {
+        row.addEventListener('click', () => onSelect(row.getAttribute('data-island'), row.getAttribute('data-atoll')));
+      });
     } else {
-      container.innerHTML = ATOLLS.map(a => `
+      container.innerHTML = ATOLLS.map((a,gi) => `
         <div class="picker-group">
-          <div class="picker-atoll-heading">${escapeHtml(a.atoll)}</div>
-          ${a.islands.map(isl => `<div class="picker-row" data-island="${escapeAttr(isl)}"><span>${escapeHtml(isl)}</span></div>`).join('')}
+          <button type="button" class="picker-atoll-toggle" data-atoll-idx="${gi}"><span>${escapeHtml(a.atoll)}</span><span class="chevron">▸</span></button>
+          <div class="picker-atoll-body" id="pickerAtoll${gi}">
+            ${a.islands.map(isl => `<div class="picker-row" data-island="${escapeAttr(isl)}" data-atoll="${escapeAttr(a.atoll)}"><span>${escapeHtml(isl)}</span></div>`).join('')}
+          </div>
         </div>`).join('');
+      container.querySelectorAll('.picker-atoll-toggle').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          btn.classList.toggle('open');
+          document.getElementById('pickerAtoll' + btn.getAttribute('data-atoll-idx')).classList.toggle('open');
+        });
+      });
+      container.querySelectorAll('.picker-row').forEach(row => {
+        row.addEventListener('click', () => onSelect(row.getAttribute('data-island'), row.getAttribute('data-atoll')));
+      });
     }
-    container.querySelectorAll('.picker-row').forEach(row => {
-      row.addEventListener('click', () => onSelect(row.getAttribute('data-island')));
-    });
   }
 
   function openIslandPicker(onSelect, opts){
@@ -209,10 +248,10 @@
     overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.remove(); });
     document.getElementById('islandPickerClose').addEventListener('click', ()=>overlay.remove());
     const allRow = overlay.querySelector('.sheet-body > .picker-row[data-island=""]');
-    if(allRow) allRow.addEventListener('click', ()=>{ overlay.remove(); onSelect(''); });
+    if(allRow) allRow.addEventListener('click', ()=>{ overlay.remove(); onSelect('', ''); });
     const resultsEl = document.getElementById('islandPickerResults');
     const searchEl = document.getElementById('islandPickerSearch');
-    function refresh(){ renderPickerList(resultsEl, searchEl.value, (isl)=>{ overlay.remove(); onSelect(isl); }); }
+    function refresh(){ renderPickerList(resultsEl, searchEl.value, (isl,atoll)=>{ overlay.remove(); onSelect(isl, atoll); }); }
     searchEl.addEventListener('input', refresh);
     refresh();
     searchEl.focus();
@@ -241,7 +280,7 @@
     document.getElementById('login').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     document.getElementById('apiLine').textContent = 'API: ' + API_BASE;
-    init();
+    boot();
   });
   document.getElementById('passcodeInput').addEventListener('keydown', (e)=>{ if(e.key === 'Enter') document.getElementById('loginBtn').click(); });
 
@@ -375,12 +414,80 @@
     });
   }
 
+  async function loadAtolls(){
+    try{
+      const res = await fetch(API_BASE + '/api/atolls');
+      if(res.ok){
+        const data = await res.json();
+        if(Array.isArray(data) && data.length) ATOLLS = data;
+      }
+    }catch(e){ /* keep the built-in fallback list */ }
+  }
+
+  function loadIslands(){
+    const wrap = document.getElementById('islandsList');
+    wrap.innerHTML = ATOLLS.map((a,gi) => `
+      <div class="row-card" style="display:block;">
+        <button type="button" class="islands-atoll-toggle" data-atoll-idx="${gi}">
+          <h3 style="font-size:16px; margin:0;">${escapeHtml(a.atoll)} <span class="mono" style="font-size:11px; color:#7c8a85;">(${a.islands.length})</span></h3>
+          <span class="chevron">▸</span>
+        </button>
+        <div class="islands-atoll-body" id="islandsAtoll${gi}">
+          <div class="btns" style="gap:6px; padding-top:10px;">
+            ${a.islands.map(isl => `<button class="btn" data-rename-atoll="${escapeAttr(a.atoll)}" data-rename-old="${escapeAttr(isl)}">${escapeHtml(isl)}</button>`).join('')}
+          </div>
+        </div>
+      </div>`).join('');
+    wrap.querySelectorAll('.islands-atoll-toggle').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        btn.classList.toggle('open');
+        document.getElementById('islandsAtoll' + btn.getAttribute('data-atoll-idx')).classList.toggle('open');
+      });
+    });
+    wrap.querySelectorAll('[data-rename-old]').forEach(btn=>{
+      btn.addEventListener('click', (e) => { e.stopPropagation(); openRenamePrompt(btn.getAttribute('data-rename-atoll'), btn.getAttribute('data-rename-old')); });
+    });
+  }
+
+  function openRenamePrompt(atoll, oldName){
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.innerHTML = `
+      <div class="sheet">
+        <div class="sheet-head">
+          <button class="close-x" id="renameClose">&times;</button>
+          <span class="eyebrow">${escapeHtml(atoll)}</span>
+          <h2>Rename "${escapeHtml(oldName)}"</h2>
+        </div>
+        <div class="sheet-body">
+          <input type="text" id="renameInput" class="search-input" value="${escapeAttr(oldName)}">
+          <p style="font-size:12px; color:#7c8a85; margin:0 0 14px;">Any businesses or events currently filed under "${escapeHtml(oldName)}" will be renamed too.</p>
+          <button class="btn primary" id="renameConfirm" style="width:100%;">Save rename</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.remove(); });
+    document.getElementById('renameClose').addEventListener('click', ()=>overlay.remove());
+    document.getElementById('renameConfirm').addEventListener('click', async ()=>{
+      const newName = document.getElementById('renameInput').value.trim();
+      if(!newName){ return; }
+      const r = await adminApi('/api/admin/islands/rename', { method:'POST', body:{ atoll, oldName, newName } });
+      overlay.remove();
+      const statusEl = document.getElementById('islandsStatus');
+      if(!r.ok){ statusEl.textContent = r.error; return; }
+      statusEl.textContent = `Renamed "${oldName}" to "${r.data.newName}" — updated ${r.data.renamedCount} existing listing(s)/event(s).`;
+      await loadAtolls();
+      loadIslands();
+    });
+  }
+
   function init(){
     document.getElementById('syncIslandBtn').addEventListener('click', ()=>{
-      openIslandPicker((isl)=>{
+      openIslandPicker((isl, atoll)=>{
         const btn = document.getElementById('syncIslandBtn');
         btn.textContent = isl;
         btn.setAttribute('data-island', isl);
+        btn.setAttribute('data-atoll', atoll);
       }, { title: 'Island to sync' });
     });
     document.getElementById('filterIslandBtn').addEventListener('click', ()=>{
@@ -394,10 +501,12 @@
     });
     document.getElementById('filterSource').addEventListener('change', loadBusinesses);
     document.getElementById('syncBtn').addEventListener('click', async ()=>{
-      const island = document.getElementById('syncIslandBtn').getAttribute('data-island');
+      const btn = document.getElementById('syncIslandBtn');
+      const island = btn.getAttribute('data-island');
+      const atoll = btn.getAttribute('data-atoll');
       const statusEl = document.getElementById('syncStatus');
       statusEl.textContent = "Syncing…";
-      const r = await adminApi('/api/admin/sync-google/' + encodeURIComponent(island), { method:'POST' });
+      const r = await adminApi('/api/admin/sync-google/' + encodeURIComponent(island) + '?atoll=' + encodeURIComponent(atoll), { method:'POST' });
       statusEl.textContent = r.ok ? `Added ${r.data.added} new listing(s)${r.data.skippedMismatch ? `, skipped ${r.data.skippedMismatch} that didn't actually match this island` : ''}.` : r.error;
       if(r.ok) loadBusinesses();
     });
@@ -408,9 +517,32 @@
       statusEl.textContent = r.ok ? `Added ${r.data.totalAdded} new listing(s) across all islands${r.data.totalSkippedMismatch ? `, skipped ${r.data.totalSkippedMismatch} that didn't match their island` : ''}.` : r.error;
       if(r.ok) loadBusinesses();
     });
+    document.getElementById('clearGoogleBtn').addEventListener('click', async ()=>{
+      if(!confirm('Remove every Google-sourced listing and reset the sync history? Owner-listed businesses, accounts, and events are not affected. This is meant to be followed by a fresh "Sync ALL islands" run.')) return;
+      const statusEl = document.getElementById('syncStatus');
+      statusEl.textContent = "Clearing previous Google data…";
+      const r = await adminApi('/api/admin/google-data/clear', { method:'POST' });
+      statusEl.textContent = r.ok ? `Removed ${r.data.removed} Google-sourced listing(s) and cleared the sync cache. Ready for a fresh sync.` : r.error;
+      if(r.ok){ loadBusinesses(); loadFlags(); }
+    });
+    document.getElementById('backfillContactsBtn').addEventListener('click', async ()=>{
+      const statusEl = document.getElementById('syncStatus');
+      statusEl.textContent = "Fetching contact numbers for listings that are missing one…";
+      const r = await adminApi('/api/admin/google-data/backfill-contacts', { method:'POST' });
+      statusEl.textContent = r.ok
+        ? `Checked ${r.data.checked} listing(s) — added ${r.data.updated} contact number(s), ${r.data.noNumberFound} had none on Google, ${r.data.failed} failed.`
+        : r.error;
+      if(r.ok) loadBusinesses();
+    });
     loadFlags();
     loadBusinesses();
     loadAccounts();
+    loadIslands();
+  }
+
+  async function boot(){
+    await loadAtolls();
+    init();
   }
 })();
 </script>
