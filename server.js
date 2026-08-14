@@ -38,29 +38,32 @@ const BIZ_FREE_LIMIT = 1;
 const BIZ_PRO_LIMIT = 10;
 const BIZ_PRO_DAYS = 30;
 
-const ATOLLS = [
-  {atoll:"Haa Alif Atoll", islands:["Dhiddhoo","Baarah","Filladhoo","Hoarafushi","Ihavandhoo","Kelaa","Maarandhoo","Muraidhoo","Thakandhoo","Utheemu","Vashafaru"]},
-  {atoll:"Haa Dhaalu Atoll", islands:["Kulhudhuffushi","Finey","Hanimaadhoo","Hirimaradhoo","Kunbifulhu","Kurinbi","Makunudhoo","Naivaadhoo","Nellaidhoo","Neykurendhoo","Nolhivaram","Nolhivaranfaru","Kumundhoo","Faridhoo"]},
-  {atoll:"Shaviyani Atoll", islands:["Funadhoo","Bileffahi","Feevah","Feydhoo","Foakaidhoo","Kanditheemu","Komandoo","Lhaimagu","Maroshi","Milandhoo","Narudhoo","Noomaraa"]},
-  {atoll:"Noonu Atoll", islands:["Manadhoo","Fohdhoo","Henbadhoo","Holhudhoo","Kendhikolhudhoo","Kudafari","Landhoo","Lhohi","Maafaru","Maalhendhoo","Miladhoo","Magoodhoo"]},
-  {atoll:"Raa Atoll", islands:["Ungoofaaru","Alifushi","Angolhitheem","Fainu","Hulhudhufaaru","Inguraidhoo","Inemaura","Kandholhudhoo","Maakurathu","Maduvvari","Meedhoo","Rasmaadhoo","Rasgetheemu","Vaadhoo"]},
-  {atoll:"Baa Atoll", islands:["Eydhafushi","Dharavandhoo","Dhonfanu","Feridhoo","Fulhadhoo","Goidhoo","Hithaadhoo","Kamadhoo","Kendhoo","Kihaadhoo","Kudarikilu","Maalhos","Thulhaadhoo"]},
-  {atoll:"Lhaviyani Atoll", islands:["Naifaru","Hinnavaru","Kurendhoo","Olhuvelifushi","Maafilaafushi"]},
-  {atoll:"Kaafu Atoll", islands:["Male'","Hulhumalé","Dhiffushi","Gulhi","Guraidhoo","Himmafushi","Huraa","Kaashidhoo","Maafushi","Thulusdhoo"]},
-  {atoll:"Alifu Alifu Atoll", islands:["Rasdhoo","Bodufulhadhoo","Feridhoo","Himandhoo","Maalhoss","Mathiveri","Thoddoo","Ukulhas"]},
-  {atoll:"Alifu Dhaalu Atoll", islands:["Mahibadhoo","Dhangethi","Dhigurah","Fenfushi","Hangnaameedhoo","Kunburudhoo","Migaahdhigoo","Maamigili","Omadhoo"]},
+// Seed data only — once the database has its own `atolls` field (below), this
+// constant is never read again. Renaming an island happens through the admin
+// endpoint instead of editing this list and redeploying.
+const SEED_ATOLLS = [
+  {atoll:"Haa Alif Atoll", islands:["Baarah","Dhiddhoo","Filladhoo","Hoarafushi","Ihavandhoo","Kelaa","Maarandhoo","Mulhadhoo","Muraidhoo","Thakandhoo","Thuraakunu","Utheemu","Vashafaru","Uligan"]},
+  {atoll:"Haa Dhaalu Atoll", islands:["Finey","Hirilandhoo","Hanimaadhoo","Kattakuredhoo","Kulhudhuffushi","Kumundhoo","Kurinbi","Makunudhoo","Navaidhoo","Nellaidhoo","Neykurendhoo","Nolhivaram","Nolhivaranfaru","Vaikaradhoo"]},
+  {atoll:"Shaviyani Atoll", islands:["Bileffahi","Feevah","Feydhoo","Foakaidhoo","Funadhoo","Goidhoo","Kanditheemu","Komandoo","Lhaimagu","Maaungoodhoo","Narudhoo","Noomaraa","Milandhoo","Maroshi"]},
+  {atoll:"Noonu Atoll", islands:["Foddhoo","Henbadhoo","Holhudhoo","Kendhikulhudhoo","Kudafari","Landhoo","Lhohi","Maalhendhoo","Magoodhoo","Manadhoo","Miladhoo","Velidhoo"]},
+  {atoll:"Raa Atoll", islands:["Alifushi","Angolhitheemu","Fainu","Hulhudhuffaaru","Inguraidhoo","Innamaadhoo","Dhuvaafaru","Kandholhudhoo","Kinnolhas","Maakurathu","Maduvvari","Meedhoo","Rasgetheemu","Rasmadhoo","Ungoofaaru","Vaadhoo"]},
+  {atoll:"Baa Atoll", islands:["Dharavandhoo","Dhonfanu","Eydafushi","Fehendhoo","Fulhadhoo","Goidhoo","Hitheadhoo","Kamadhoo","Kendhoo","Kihaadhoo","Kudarikilu","Maalhos","Thulhaadhoo"]},
+  {atoll:"Lhaviyani Atoll", islands:["Hinnavaru","Kurendhoo","Maafilaafushi","Naifaru","Olhuvelifushi"]},
+  {atoll:"Kaafu Atoll & Malé", islands:["Malé","Villingili","Hulhumalé","Hulhulé","Dhiffushi","Gaafaru","Gulhi","Guraidhoo","Himmafushi","Huraa","Kaashidhoo","Maafushi","Thulusdhoo"]},
+  {atoll:"Alif Alif Atoll", islands:["Bodufolhudhoo","Feridhoo","Himandhoo","Mathiveri","Rasdhoo","Thoddoo","Ukulhas","Maalhos"]},
+  {atoll:"Alif Dhaal Atoll", islands:["Dhigurah","Fenfushi","Hangnaameedhoo","Kunburudhoo","Maamigili","Mahibadhoo","Mandhoo","Omadhoo","Dhangethi","Dhidhdhoo"]},
   {atoll:"Vaavu Atoll", islands:["Felidhoo","Fulidhoo","Keyodhoo","Rakeedhoo","Thinadhoo"]},
-  {atoll:"Meemu Atoll", islands:["Muli","Dhiggaru","Kolhufushi","Maduvvari","Mulah","Naalaafushi","Veyvah"]},
-  {atoll:"Faafu Atoll", islands:["Nilandhoo","Bileddhoo","Dharanboodhoo","Magoodhoo","Feeali"]},
-  {atoll:"Dhaalu Atoll", islands:["Kudahuvadhoo","Bandidhoo","Gemendhoo","Hulhudheli","Meedhoo","Rinbudhoo"]},
-  {atoll:"Thaa Atoll", islands:["Veymandoo","Buruni","Dhiyamigili","Gaadhiffushi","Guraidhoo","Hirilandhoo","Kandoodhoo","Kinbidhoo","Madifushi","Omadhoo","Thimarafushi","Vandhoo","Dandhoo"]},
-  {atoll:"Laamu Atoll", islands:["Fonadhoo","Gan","Isdhoo","Kalaidhoo","Kunahandhoo","Maabaidhoo","Maamendhoo","Maavah","Mundoo","Hithadhoo"]},
-  {atoll:"Gaafu Alif Atoll", islands:["Vilingili","Dhaandhoo","Devvadhoo","Gemanafushi","Kandhuhulhudhoo","Kolamaafushi","Maamendhoo","Nilandhoo"]},
-  {atoll:"Gaafu Dhaalu Atoll", islands:["Thinadhoo","Faresmaathoda","Fiyoari","Gadhdhoo","Hoadhedhdhoo","Madaveli","Nadallaa","Rathafandhoo","Vaadhoo"]},
+  {atoll:"Meemu Atoll", islands:["Dhiggaru","Kolhufushi","Maduvvaree","Mulah","Muli","Naalaafushi","Raimmandhoo","Veyvah"]},
+  {atoll:"Faafu Atoll", islands:["Feeali","Bileddhoo","Dharanboodhoo","Magoodhoo","Nilandhoo"]},
+  {atoll:"Dhaalu Atoll", islands:["Bandidhoo","Gemendhoo","Huluhedheli","Kudahuvadhoo","Maaenboodhoo","Meedhoo","Rinbudhoo"]},
+  {atoll:"Thaa Atoll", islands:["Buruni","Dhiyamigili","Gaadhiffushi","Guraidhoo","Hirilandhoo","Kandoodhoo","Kinbidhoo","Madifushi","Omadhoo","Thimarafushi","Vandhoo","Veimandoo","Vilufushi"]},
+  {atoll:"Laamu Atoll", islands:["Dhanbidhoo","Fonadhoo","Gaadhoo","Gan","Isdhoo","Kalaidhoo","Kunahandhoo","Maabaidhoo","Maamendhoo","Maavah","Mundoo"]},
+  {atoll:"Gaafu Alifu Atoll", islands:["Dhaandhoo","Dhevvadhoo","Gemanafushi","Kanduhulhudhoo","Kolamaafushi","Kondey","Maamendhoo","Nilandhoo","Villingili"]},
+  {atoll:"Gaafu Dhaalu Atoll", islands:["Fares-Maathoda","Fiyoari","Gaddhoo","Hoandeddhoo","Nadella","Rathafandhoo","Thinadhoo","Vaadhoo","Madaveli"]},
   {atoll:"Gnaviyani Atoll", islands:["Fuvahmulah"]},
-  {atoll:"Seenu Atoll", islands:["Hithadhoo","Feydhoo","Hulhudhoo","Maradhoo","Maradhoofeydhoo","Meedhoo"]}
+  {atoll:"Seenu Atoll", islands:["Feydhoo","Hithadhoo","Hulhudhoo","Meedhoo","Maradhoo","Maradhoo-Feydhoo"]}
 ];
-const ISLANDS = ATOLLS.reduce((acc,a)=>acc.concat(a.islands), []);
+function flattenIslands(atolls){ return atolls.reduce((acc,a)=>acc.concat(a.islands), []); }
 const CATEGORIES = ["Guesthouses","Hotels & Resorts","Cafés & Restaurants","Excursions & Dive","Shops & Rentals","Attractions & Activities"];
 const CATEGORY_QUERY = {
   "Guesthouses": "guesthouses",
@@ -73,6 +76,7 @@ const CATEGORY_QUERY = {
 
 function seedState(){
   return {
+    atolls: SEED_ATOLLS,
     businesses: [
       {id:"b1", name:"Ocean Breeze Guesthouse", category:"Guesthouses", island:"Maafushi", desc:"Ten minutes from bikini beach, family-run, free bike loan.", price:"$28–40/night", contact:"+960 771 2233", ownerEmail:"demo@atollisle.mv", verified:true, source:"owner"},
       {id:"b2", name:"Salt & Line Café", category:"Cafés & Restaurants", island:"Maafushi", desc:"Fresh tuna, slow coffee, sunset seating on the jetty.", price:"$4–12/plate", contact:"+960 795 1010", ownerEmail:"demo@atollisle.mv", verified:false, source:"owner"},
@@ -102,7 +106,10 @@ async function ensureTable(){
 }
 async function dbRead(){
   const { rows } = await pool.query("SELECT data FROM app_state WHERE id = 1");
-  return rows[0].data;
+  const db = rows[0].data;
+  // Backfill for databases created before islands moved into the DB.
+  if(!db.atolls) db.atolls = SEED_ATOLLS;
+  return db;
 }
 async function dbWrite(db){
   await pool.query("UPDATE app_state SET data = $1 WHERE id = 1", [JSON.stringify(db)]);
@@ -155,6 +162,11 @@ app.use(cors());
 app.use(express.json());
 
 // -- public: businesses & events --
+app.get("/api/atolls", h(async (req, res) => {
+  const db = await dbRead();
+  res.json(db.atolls);
+}));
+
 app.get("/api/businesses", h(async (req, res) => {
   const db = await dbRead();
   let list = db.businesses;
@@ -330,6 +342,49 @@ app.post("/api/admin/duplicate-flags/:id/resolve", requireAdmin, h(async (req, r
 
 app.get("/api/admin/businesses", requireAdmin, h(async (req, res) => res.json(req.db.businesses)));
 
+// Renames an island everywhere it's used: the atoll list itself, any
+// businesses/events currently filed under the old name, and the Google sync
+// cache. `atoll` disambiguates which island to rename, since a handful of
+// island names repeat across different atolls in the Maldives.
+app.post("/api/admin/islands/rename", requireAdmin, h(async (req, res) => {
+  const db = req.db;
+  const { atoll, oldName, newName } = req.body;
+  const newTrimmed = (newName || "").trim();
+  if(!atoll || !oldName || !newTrimmed) return res.status(400).json({error:"atoll, oldName and newName are required"});
+  const atollEntry = db.atolls.find(a => a.atoll === atoll);
+  if(!atollEntry) return res.status(404).json({error:"Atoll not found"});
+  const idx = atollEntry.islands.indexOf(oldName);
+  if(idx === -1) return res.status(404).json({error:"Island not found in that atoll"});
+  if(newTrimmed !== oldName && atollEntry.islands.includes(newTrimmed)){
+    return res.status(409).json({error:"That atoll already has an island with this name"});
+  }
+  atollEntry.islands[idx] = newTrimmed;
+  let renamedCount = 0;
+  db.businesses.forEach(b => { if(b.island === oldName){ b.island = newTrimmed; renamedCount++; } });
+  db.events.forEach(e => { if(e.island === oldName){ e.island = newTrimmed; renamedCount++; } });
+  if(db.googleSyncCache && db.googleSyncCache[oldName] !== undefined){
+    db.googleSyncCache[newTrimmed] = db.googleSyncCache[oldName];
+    delete db.googleSyncCache[oldName];
+  }
+  await dbWrite(db);
+  res.json({ atoll, oldName, newName: newTrimmed, renamedCount });
+}));
+
+// Replaces the whole island/atoll list with the current built-in SEED_ATOLLS
+// (i.e. whatever's in this file right now). Use this after updating
+// SEED_ATOLLS in code and redeploying, since a live database's `atolls` field
+// is only backfilled once and otherwise doesn't pick up code changes on its
+// own. Does NOT touch existing businesses/events — any of them filed under a
+// name that no longer exists in the new list will keep showing that old
+// name; use "Fix island" on each to reassign them to the corrected spelling.
+app.post("/api/admin/islands/reset-to-latest", requireAdmin, h(async (req, res) => {
+  const db = req.db;
+  const before = flattenIslands(db.atolls).length;
+  db.atolls = SEED_ATOLLS;
+  await dbWrite(db);
+  res.json({ before, after: flattenIslands(db.atolls).length });
+}));
+
 app.delete("/api/admin/businesses/:id", requireAdmin, h(async (req, res) => {
   const db = req.db;
   db.businesses = db.businesses.filter(b => b.id !== req.params.id);
@@ -342,7 +397,7 @@ app.patch("/api/admin/businesses/:id", requireAdmin, h(async (req, res) => {
   const b = db.businesses.find(x => x.id === req.params.id);
   if(!b) return res.status(404).json({error:"Not found"});
   if(typeof req.body.verified === "boolean") b.verified = req.body.verified;
-  if(typeof req.body.island === "string" && ISLANDS.includes(req.body.island)) b.island = req.body.island;
+  if(typeof req.body.island === "string" && flattenIslands(db.atolls).includes(req.body.island)) b.island = req.body.island;
   if(typeof req.body.category === "string" && CATEGORIES.includes(req.body.category)) b.category = req.body.category;
   await dbWrite(db);
   res.json(b);
@@ -388,11 +443,18 @@ function addressMentionsIsland(address, island){
   return norm(address).includes(norm(island));
 }
 
-async function syncIslandGoogle(db, island){
+// A handful of island names repeat across different atolls (e.g. "Meedhoo"
+// exists in three). The atoll name goes into the search query itself so
+// Google is biased toward the right one, and the sync cache/results are
+// keyed by "Atoll::Island" rather than island name alone, so syncing one
+// "Meedhoo" never gets confused with — or skipped because of — another.
+function syncKey(atoll, island){ return atoll + "::" + island; }
+
+async function syncIslandGoogle(db, atoll, island){
   let added = 0;
   let skippedMismatch = 0;
   for(const category of CATEGORIES){
-    const query = CATEGORY_QUERY[category] + " in " + island + " Maldives";
+    const query = CATEGORY_QUERY[category] + " in " + island + ", " + atoll + ", Maldives";
     const results = await placesTextSearch(query);
     for(const place of results){
       const exists = db.businesses.find(b => b.googlePlaceId === place.id);
@@ -400,22 +462,25 @@ async function syncIslandGoogle(db, island){
       if(!addressMentionsIsland(place.formattedAddress, island)){ skippedMismatch++; continue; }
       db.businesses.push({
         id: genId("g"), name: (place.displayName && place.displayName.text) || "Unnamed place", category, island,
-        desc: place.formattedAddress || "", price:"", contact:"", ownerEmail:null,
+        desc: place.formattedAddress || "", price:"", contact: place.internationalPhoneNumber || place.nationalPhoneNumber || "", ownerEmail:null,
         verified:false, source:"google", googlePlaceId: place.id
       });
       added++;
     }
   }
-  db.googleSyncCache[island] = Date.now();
+  db.googleSyncCache[syncKey(atoll, island)] = Date.now();
   return { added, skippedMismatch };
 }
 
 app.post("/api/admin/sync-google/:island", requireAdmin, h(async (req, res) => {
   if(!GOOGLE_PLACES_API_KEY) return res.status(400).json({error:"GOOGLE_PLACES_API_KEY is not set on the server"});
   const island = req.params.island;
-  if(!ISLANDS.includes(island)) return res.status(400).json({error:"Unknown island"});
+  const atoll = req.query.atoll;
   const db = req.db;
-  const { added, skippedMismatch } = await syncIslandGoogle(db, island);
+  if(!atoll) return res.status(400).json({error:"atoll is required — island names can repeat across atolls, so this disambiguates which one to sync"});
+  const atollEntry = db.atolls.find(a => a.atoll === atoll);
+  if(!atollEntry || !atollEntry.islands.includes(island)) return res.status(400).json({error:"Unknown island for that atoll"});
+  const { added, skippedMismatch } = await syncIslandGoogle(db, atoll, island);
   await dbWrite(db);
   res.json({ added, skippedMismatch });
 }));
@@ -423,31 +488,96 @@ app.post("/api/admin/sync-google/:island", requireAdmin, h(async (req, res) => {
 // Syncs every island in one call — the comprehensive "list everything on the
 // internet" pass. Takes longer (one Places call per island per category) and
 // each call counts against your Google billing, so this is admin-triggered
-// rather than automatic.
+// rather than automatic. Iterates atoll-by-atoll so same-named islands in
+// different atolls each get their own correctly-scoped search.
 app.post("/api/admin/sync-google-all", requireAdmin, h(async (req, res) => {
   if(!GOOGLE_PLACES_API_KEY) return res.status(400).json({error:"GOOGLE_PLACES_API_KEY is not set on the server"});
   const db = req.db;
   const perIsland = {};
   let totalSkippedMismatch = 0;
-  for(const island of ISLANDS){
-    const r = await syncIslandGoogle(db, island);
-    perIsland[island] = r.added;
-    totalSkippedMismatch += r.skippedMismatch;
+  for(const atollEntry of db.atolls){
+    for(const island of atollEntry.islands){
+      const r = await syncIslandGoogle(db, atollEntry.atoll, island);
+      perIsland[syncKey(atollEntry.atoll, island)] = r.added;
+      totalSkippedMismatch += r.skippedMismatch;
+    }
   }
   await dbWrite(db);
   res.json({ perIsland, totalAdded: Object.values(perIsland).reduce((a,b)=>a+b,0), totalSkippedMismatch });
 }));
 
+// Removes every Google-sourced business and resets the sync cache/duplicate
+// flags, so a fresh "Sync ALL islands" run starts clean — useful after the
+// sync logic itself changes (like the atoll-disambiguation fix above), since
+// old entries synced under the previous logic could be mis-attributed.
+// Owner-listed businesses, business accounts, and events are never touched.
+app.post("/api/admin/google-data/clear", requireAdmin, h(async (req, res) => {
+  const db = req.db;
+  const before = db.businesses.length;
+  db.businesses = db.businesses.filter(b => b.source !== "google");
+  const removed = before - db.businesses.length;
+  db.googleSyncCache = {};
+  db.duplicateFlags = [];
+  await dbWrite(db);
+  res.json({ removed });
+}));
+
+// Fetches one place's contact number directly, bypassing the text-search
+// dedup that skips places already synced by place_id — needed to backfill
+// phone numbers onto listings synced before the field mask included them.
+async function placeContactDetails(placeId){
+  const res = await fetch(`https://places.googleapis.com/v1/places/${placeId}`, {
+    headers: {
+      "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
+      "X-Goog-FieldMask": "nationalPhoneNumber,internationalPhoneNumber"
+    }
+  });
+  const data = await res.json().catch(() => ({}));
+  if(!res.ok){
+    const msg = (data.error && data.error.message) || res.statusText;
+    throw new Error(`Google Places returned ${res.status}: ${msg}`);
+  }
+  return data.internationalPhoneNumber || data.nationalPhoneNumber || "";
+}
+
+// Backfills contact numbers onto Google-sourced listings that don't have one
+// yet (most commonly: everything synced before the field mask requested
+// phone numbers). One Place Details call per listing, so this costs Google
+// API usage proportional to how many are missing a number — the response
+// tells you how many were actually updated vs. how many Google simply
+// doesn't have a number for.
+app.post("/api/admin/google-data/backfill-contacts", requireAdmin, h(async (req, res) => {
+  if(!GOOGLE_PLACES_API_KEY) return res.status(400).json({error:"GOOGLE_PLACES_API_KEY is not set on the server"});
+  const db = req.db;
+  const targets = db.businesses.filter(b => b.source === "google" && b.googlePlaceId && !b.contact);
+  let updated = 0, noNumberFound = 0, failed = 0;
+  for(const b of targets){
+    try{
+      const phone = await placeContactDetails(b.googlePlaceId);
+      if(phone){ b.contact = phone; updated++; } else { noNumberFound++; }
+    }catch(e){ failed++; }
+  }
+  await dbWrite(db);
+  res.json({ checked: targets.length, updated, noNumberFound, failed });
+}));
+
 // Uses Places API (New) — Google's current text search product, not the
 // legacy "Places API". These are two separate things to enable/restrict in
 // Google Cloud; this app only ever calls the New one.
+//
+// Field mask note: id/displayName/formattedAddress are Google's "Basic Data"
+// tier; nationalPhoneNumber/internationalPhoneNumber are "Contact Data" —
+// billed at a higher per-request rate by Google. Requesting them is what
+// makes contact numbers actually show up on synced listings; check Google's
+// current Places API pricing if sync volume grows, since this raises the
+// cost of every search call, not just ones that end up with a phone number.
 async function placesTextSearch(query){
   const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
-      "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress"
+      "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.internationalPhoneNumber"
     },
     body: JSON.stringify({ textQuery: query })
   });
