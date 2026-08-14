@@ -28,23 +28,27 @@
   html,body{margin:0;padding:0;}
   body{
     background-color:var(--sand);
-    background-image: radial-gradient(rgba(31,138,140,0.09) 1.2px, transparent 1.2px);
-    background-size: 20px 20px;
-    animation: dotDrift 16s linear infinite;
+    background-image: radial-gradient(rgba(31,138,140,0.14) 1.4px, transparent 1.4px);
+    background-size: 22px 22px;
+    animation: dotDrift 10s linear infinite;
     color:var(--charcoal);
     font-family:'Work Sans', sans-serif;
     min-height:100vh;
     position:relative;
     overflow-x:hidden;
   }
-  @keyframes dotDrift{ from{ background-position:0 0; } to{ background-position:20px 20px; } }
-  .bg-blob{ position:fixed; border-radius:50%; filter:blur(70px); pointer-events:none; z-index:0; }
-  .bg-blob.b1{ width:340px; height:340px; background:radial-gradient(circle, var(--teal), transparent 70%); opacity:0.30; top:-70px; left:-90px; animation:blobDrift1 26s ease-in-out infinite; }
-  .bg-blob.b2{ width:300px; height:300px; background:radial-gradient(circle, var(--coral), transparent 70%); opacity:0.24; bottom:-70px; right:-70px; animation:blobDrift2 32s ease-in-out infinite; }
-  .bg-blob.b3{ width:260px; height:260px; background:radial-gradient(circle, #F5C34D, transparent 70%); opacity:0.18; top:45%; right:-100px; animation:blobDrift3 22s ease-in-out infinite; }
-  @keyframes blobDrift1{ 0%,100%{ transform:translate(0,0) scale(1); } 50%{ transform:translate(70px,90px) scale(1.15); } }
-  @keyframes blobDrift2{ 0%,100%{ transform:translate(0,0) scale(1); } 50%{ transform:translate(-80px,-60px) scale(1.1); } }
-  @keyframes blobDrift3{ 0%,100%{ transform:translate(0,0) scale(1); } 50%{ transform:translate(-50px,70px) scale(0.9); } }
+  @keyframes dotDrift{ from{ background-position:0 0; } to{ background-position:22px 22px; } }
+  .bg-blob{ position:fixed; border-radius:50%; filter:blur(80px); pointer-events:none; z-index:0; }
+  .bg-blob.b1{ width:480px; height:480px; background:radial-gradient(circle, var(--teal), transparent 70%); opacity:0.42; top:8%; left:-160px; animation:blobDrift1 22s ease-in-out infinite; }
+  .bg-blob.b2{ width:440px; height:440px; background:radial-gradient(circle, var(--coral), transparent 70%); opacity:0.34; bottom:10%; right:-150px; animation:blobDrift2 27s ease-in-out infinite; }
+  .bg-blob.b3{ width:380px; height:380px; background:radial-gradient(circle, #F5C34D, transparent 70%); opacity:0.28; top:42%; right:-130px; animation:blobDrift3 19s ease-in-out infinite; }
+  .bg-blob.b4{ width:360px; height:360px; background:radial-gradient(circle, var(--teal), transparent 70%); opacity:0.26; bottom:32%; left:-140px; animation:blobDrift4 24s ease-in-out infinite; }
+  .bg-blob.b5{ width:300px; height:300px; background:radial-gradient(circle, var(--coral), transparent 70%); opacity:0.22; top:70%; left:20%; animation:blobDrift5 30s ease-in-out infinite; }
+  @keyframes blobDrift1{ 0%,100%{ transform:translate(0,0) scale(1); } 50%{ transform:translate(110px,90px) scale(1.2); } }
+  @keyframes blobDrift2{ 0%,100%{ transform:translate(0,0) scale(1); } 50%{ transform:translate(-120px,-70px) scale(1.15); } }
+  @keyframes blobDrift3{ 0%,100%{ transform:translate(0,0) scale(1); } 50%{ transform:translate(-90px,110px) scale(0.88); } }
+  @keyframes blobDrift4{ 0%,100%{ transform:translate(0,0) scale(1); } 50%{ transform:translate(100px,-90px) scale(1.1); } }
+  @keyframes blobDrift5{ 0%,100%{ transform:translate(0,0) scale(1); } 50%{ transform:translate(-80px,-100px) scale(1.25); } }
   .shell{
     max-width:480px;
     margin:0 auto;
@@ -420,6 +424,7 @@
     .card{margin-bottom:0;}
     .sheet{max-width:520px; border-radius:16px; margin-bottom:6vh;}
     .overlay{align-items:center;}
+    .bottomnav{max-width:1180px;}
   }
 </style>
 </head>
@@ -427,6 +432,8 @@
 <div class="bg-blob b1"></div>
 <div class="bg-blob b2"></div>
 <div class="bg-blob b3"></div>
+<div class="bg-blob b4"></div>
+<div class="bg-blob b5"></div>
 <div class="shell" id="shell">
 
   <!-- BOARDING SCREEN -->
