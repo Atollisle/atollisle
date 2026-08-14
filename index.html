@@ -66,14 +66,19 @@
     display:flex;
     flex-direction:column;
     padding:24px 22px 22px;
+    position:relative;
+    overflow:hidden;
   }
+  .board-top{ position:relative; z-index:1; }
   .board-top .eyebrow{color:#7FCFCB;}
   .board-title{
     font-size:40px;
     line-height:1.02;
     margin-top:14px;
     color:var(--white);
+    animation: titleIn 0.6s cubic-bezier(.2,.9,.3,1);
   }
+  @keyframes titleIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
   .board-sub{
     font-family:'IBM Plex Mono', monospace;
     font-size:11px;
@@ -81,7 +86,8 @@
     margin-top:10px;
     letter-spacing:0.04em;
   }
-  .board-area{margin-top:22px; display:flex; flex-direction:column; gap:18px;}
+  .board-area{margin-top:22px; display:flex; flex-direction:column; gap:18px; position:relative; z-index:1;}
+  .ambient-bubble{ position:absolute; border-radius:50%; background:rgba(127,207,203,0.14); pointer-events:none; animation:floatUp 7s ease-in infinite; z-index:0; }
   .atoll-map{width:100%; display:block;}
   .atoll-dot{cursor:pointer;}
   .atoll-dot circle{transition:r 0.15s ease, fill 0.15s ease;}
@@ -233,8 +239,17 @@
     padding:15px;
     margin-bottom:12px;
     cursor:pointer;
+    animation: cardIn 0.4s ease both;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
+  .card:hover{ transform:translateY(-2px); box-shadow:0 8px 20px rgba(11,46,53,0.08); }
+  @keyframes cardIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
   .card-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
+  .card-top .title-row{display:flex; align-items:center; gap:8px;}
+  .cat-icon{
+    width:26px; height:26px; border-radius:50%; flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center;
+  }
   .card h3{font-size:20px;}
   .card .cat{
     font-family:'IBM Plex Mono', monospace;
@@ -293,26 +308,42 @@
     border-radius:18px 18px 0 0;
     padding:0;
     position:relative;
+    animation: sheetIn 0.32s cubic-bezier(.2,.9,.3,1);
   }
+  @keyframes sheetIn{ from{ transform:translateY(24px); opacity:0; } to{ transform:translateY(0); opacity:1; } }
   .sheet-head{
     background:linear-gradient(135deg, var(--ink), var(--ink-2));
     color:var(--white);
     padding:20px 20px 16px;
     position:relative;
+    overflow:hidden;
   }
-  .sheet-head .logo-row{margin-bottom:10px;}
-  .sheet-head .eyebrow{color:#7FCFCB;}
-  .sheet-head h2{color:var(--white); font-size:25px; margin-top:6px;}
-  .sheet-head .subline{font-family:'IBM Plex Mono', monospace; font-size:11px; color:#9FC7C3; margin-top:6px;}
-  .sheet-wave{display:block; width:100%; height:12px;}
+  /* ---------- popup themes ---------- */
+  .sheet-head.theme-ocean{ background:linear-gradient(135deg, #0B2E35, #146370); }
+  .sheet-head.theme-warm{ background:linear-gradient(135deg, #123F47, #4A3626); }
+  .sheet-head.theme-festive{ background:linear-gradient(135deg, #0B2E35, #6E2A1E); }
+  .deco{ position:absolute; pointer-events:none; opacity:0.75; }
+  @keyframes floatUp{ 0%{ transform:translateY(6px); opacity:0; } 15%{ opacity:0.8; } 100%{ transform:translateY(-46px); opacity:0; } }
+  @keyframes sway{ 0%,100%{ transform:rotate(-6deg); } 50%{ transform:rotate(6deg); } }
+  @keyframes twinkle{ 0%,100%{ opacity:0.25; transform:scale(0.85); } 50%{ opacity:0.95; transform:scale(1.05); } }
+  .deco-bubble{ border-radius:50%; background:rgba(255,255,255,0.35); animation:floatUp 3.6s ease-in infinite; }
+  .deco-leaf{ animation:sway 3.2s ease-in-out infinite; transform-origin:bottom center; }
+  .deco-spark{ border-radius:50%; background:var(--coral); animation:twinkle 1.8s ease-in-out infinite; }
+  .sheet-head .logo-row{margin-bottom:10px; position:relative; z-index:1;}
+  .sheet-head .eyebrow{color:#7FCFCB; position:relative; z-index:1;}
+  .sheet-head h2{color:var(--white); font-size:25px; margin-top:6px; position:relative; z-index:1;}
+  .sheet-head .subline{font-family:'IBM Plex Mono', monospace; font-size:11px; color:#9FC7C3; margin-top:6px; position:relative; z-index:1;}
+  .sheet-wave{display:block; width:200%; height:12px; animation:waveDrift 8s linear infinite;}
+  @keyframes waveDrift{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
   .sheet-body{padding:20px 20px 26px;}
   .sheet .price-tag{font-family:'IBM Plex Mono', monospace; font-size:30px; color:var(--coral); margin:2px 0 4px;}
   .sheet ul{padding-left:18px; margin:14px 0 18px; font-size:13.5px; line-height:1.7; color:#3a4642;}
   .sheet .row-btns{display:flex; gap:10px;}
-  .btn-primary{flex:1; background:var(--coral); color:var(--white); border:none; font-family:'IBM Plex Mono', monospace; font-size:12.5px; letter-spacing:0.03em; padding:13px; border-radius:9px; cursor:pointer;}
+  .btn-primary{flex:1; background:var(--coral); color:var(--white); border:none; font-family:'IBM Plex Mono', monospace; font-size:12.5px; letter-spacing:0.03em; padding:13px; border-radius:9px; cursor:pointer; transition:transform 0.15s ease;}
+  .btn-primary:hover{ transform:translateY(-1px); }
   .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--charcoal); font-family:'IBM Plex Mono', monospace; font-size:12.5px; padding:13px 16px; border-radius:9px; cursor:pointer;}
   .fine{font-size:11px; color:#8a8477; margin-top:12px; line-height:1.5;}
-  .close-x{position:absolute; top:14px; right:16px; background:rgba(255,255,255,0.12); border:none; width:28px; height:28px; border-radius:50%; font-size:18px; color:var(--white); cursor:pointer; line-height:1;}
+  .close-x{position:absolute; top:14px; right:16px; background:rgba(255,255,255,0.12); border:none; width:28px; height:28px; border-radius:50%; font-size:18px; color:var(--white); cursor:pointer; line-height:1; z-index:2;}
   /* ---------- PORTAL ---------- */
   .field{margin-bottom:12px;}
   .field label{display:block; font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--teal); margin-bottom:5px;}
@@ -371,6 +402,11 @@
 
   <!-- BOARDING SCREEN -->
   <section id="boarding">
+    <div class="ambient-bubble" style="left:8%; bottom:20px; width:16px; height:16px; animation-delay:0s;"></div>
+    <div class="ambient-bubble" style="left:22%; bottom:5px; width:10px; height:10px; animation-delay:1.4s;"></div>
+    <div class="ambient-bubble" style="left:78%; bottom:30px; width:22px; height:22px; animation-delay:2.8s;"></div>
+    <div class="ambient-bubble" style="left:88%; bottom:10px; width:12px; height:12px; animation-delay:4.2s;"></div>
+    <div class="ambient-bubble" style="left:55%; bottom:0; width:8px; height:8px; animation-delay:5.6s;"></div>
     <div class="board-top">
       <div style="display:flex; align-items:center; justify-content:space-between;">
         <div class="logo-row">
@@ -392,6 +428,7 @@
       </div>
     </div>
     <div class="board-hint" data-i18n="boardHint">Tap an island to board · you can change this later</div>
+
   </section>
 
   <!-- MAIN APP -->
@@ -482,7 +519,10 @@
 
 <script>
 (function(){
-  const ATOLLS = [
+  // Live source of truth is the API (Super Admin can rename islands there).
+  // This is only the fallback used if that fetch fails (e.g. API unreachable
+  // on first load) so the app still shows something instead of breaking.
+  let ATOLLS = [
     {atoll:"Haa Alif Atoll", islands:["Dhiddhoo","Baarah","Filladhoo","Hoarafushi","Ihavandhoo","Kelaa","Maarandhoo","Muraidhoo","Thakandhoo","Utheemu","Vashafaru"]},
     {atoll:"Haa Dhaalu Atoll", islands:["Kulhudhuffushi","Finey","Hanimaadhoo","Hirimaradhoo","Kunbifulhu","Kurinbi","Makunudhoo","Naivaadhoo","Nellaidhoo","Neykurendhoo","Nolhivaram","Nolhivaranfaru","Kumundhoo","Faridhoo"]},
     {atoll:"Shaviyani Atoll", islands:["Funadhoo","Bileffahi","Feevah","Feydhoo","Foakaidhoo","Kanditheemu","Komandoo","Lhaimagu","Maroshi","Milandhoo","Narudhoo","Noomaraa"]},
@@ -504,7 +544,6 @@
     {atoll:"Gnaviyani Atoll", islands:["Fuvahmulah"]},
     {atoll:"Seenu Atoll", islands:["Hithadhoo","Feydhoo","Hulhudhoo","Maradhoo","Maradhoofeydhoo","Meedhoo"]}
   ];
-  const ISLANDS = ATOLLS.reduce((acc,a)=>acc.concat(a.islands), []);
   // Some island names repeat across different atolls (a real feature of Maldives
   // geography, e.g. "Meedhoo" exists in three atolls) — the picker shows the
   // atoll name alongside each result so these are distinguishable when choosing,
@@ -671,12 +710,51 @@
   function escapeAttr(s){ return escapeHtml(s); }
   function fmtDate(ms){ return new Date(ms).toLocaleDateString(undefined, {day:'numeric', month:'short', year:'numeric'}); }
 
+  // Maps a business category (or a special context like 'events'/'pro') to a
+  // popup theme — controls the header gradient and which little animated
+  // decorations float in it, so a dive listing feels different from a café.
+  function themeFor(category){
+    const map = {
+      "Guesthouses":"warm", "Hotels & Resorts":"warm",
+      "Cafés & Restaurants":"festive", "Shops & Rentals":"festive",
+      "Excursions & Dive":"ocean", "Attractions & Activities":"ocean",
+      "events":"festive", "pro":"festive", "business":"warm"
+    };
+    return map[category] || "default";
+  }
+
+  function themeDecor(theme){
+    if(theme === 'ocean'){
+      return `
+        <div class="deco deco-bubble" style="left:14%; bottom:6px; width:9px; height:9px; animation-delay:0s;"></div>
+        <div class="deco deco-bubble" style="left:26%; bottom:10px; width:6px; height:6px; animation-delay:0.9s;"></div>
+        <div class="deco deco-bubble" style="left:82%; bottom:4px; width:11px; height:11px; animation-delay:1.6s;"></div>
+        <div class="deco deco-bubble" style="left:70%; bottom:14px; width:5px; height:5px; animation-delay:2.3s;"></div>`;
+    }
+    if(theme === 'warm'){
+      return `
+        <svg class="deco deco-leaf" style="right:16px; top:8px;" width="30" height="30" viewBox="0 0 40 40"><path d="M20 36 C10 28 8 14 20 4 C32 14 30 28 20 36 Z" fill="rgba(255,255,255,0.18)"/><path d="M20 34 L20 6" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/></svg>
+        <svg class="deco deco-leaf" style="right:42px; top:16px; animation-delay:0.6s;" width="20" height="20" viewBox="0 0 40 40"><path d="M20 36 C10 28 8 14 20 4 C32 14 30 28 20 36 Z" fill="rgba(255,255,255,0.14)"/></svg>`;
+    }
+    if(theme === 'festive'){
+      return `
+        <div class="deco deco-spark" style="left:18%; top:14px; width:5px; height:5px;"></div>
+        <div class="deco deco-spark" style="left:76%; top:10px; width:4px; height:4px; animation-delay:0.5s;"></div>
+        <div class="deco deco-spark" style="left:60%; top:22px; width:6px; height:6px; animation-delay:0.9s; background:#F5C34D;"></div>
+        <div class="deco deco-spark" style="left:32%; top:26px; width:4px; height:4px; animation-delay:1.3s; background:#7FCFCB;"></div>`;
+    }
+    return '';
+  }
+
   // Builds the themed head + wave divider + body wrapper every popup uses, so no popup ever renders as a plain white card.
   function sheetShell(opts){
     const closeBtn = opts.closeId ? `<button class="close-x" id="${opts.closeId}">&times;</button>` : '';
+    const theme = opts.theme || 'default';
+    const themeClass = theme !== 'default' ? ` theme-${theme}` : '';
     return `
       <div class="sheet">
-        <div class="sheet-head">
+        <div class="sheet-head${themeClass}">
+          ${themeDecor(theme)}
           ${closeBtn}
           <div class="logo-row">
             <svg width="22" height="22" viewBox="0 0 64 64"><circle cx="32" cy="34" r="20" fill="none" stroke="var(--teal)" stroke-width="5"/><path d="M32 9 L32 34 L45 34 Z" fill="var(--coral)"/><circle cx="32" cy="34" r="3" fill="var(--sand)"/></svg>
@@ -685,7 +763,7 @@
           <h2>${opts.title}</h2>
           ${opts.subline ? `<div class="subline">${opts.subline}</div>` : ''}
         </div>
-        <svg class="sheet-wave" viewBox="0 0 400 12" preserveAspectRatio="none"><path d="M0 6 Q 20 0 40 6 T 80 6 T 120 6 T 160 6 T 200 6 T 240 6 T 280 6 T 320 6 T 360 6 T 400 6" fill="none" stroke="var(--coral)" stroke-width="2"/></svg>
+        <svg class="sheet-wave" viewBox="0 0 800 12" preserveAspectRatio="none"><path d="M0 6 Q 20 0 40 6 T 80 6 T 120 6 T 160 6 T 200 6 T 240 6 T 280 6 T 320 6 T 360 6 T 400 6 T 440 6 T 480 6 T 520 6 T 560 6 T 600 6 T 640 6 T 680 6 T 720 6 T 760 6 T 800 6" fill="none" stroke="var(--coral)" stroke-width="2"/></svg>
         <div class="sheet-body">${opts.body}</div>
       </div>`;
   }
@@ -828,7 +906,7 @@
     const overlay = document.createElement('div');
     overlay.className = 'overlay';
     overlay.innerHTML = sheetShell({
-      eyebrow: t('modalEyebrow'), title: t('modalTitle'),
+      eyebrow: t('modalEyebrow'), title: t('modalTitle'), theme: 'pro',
       body: `
         <div class="price-tag">$2.00</div>
         <ul><li>${t('modalBenefit1')}</li><li>${t('modalBenefit2')}</li><li>${t('modalBenefit3')}</li><li>${t('modalBenefit4')}</li></ul>
@@ -870,6 +948,7 @@
       eyebrow: catLabel(b.category) + " · " + b.island,
       title: escapeHtml(b.name),
       subline: b.verified ? '✓ Verified listing' : '',
+      theme: themeFor(b.category),
       body: `
         <p style="font-size:14px; line-height:1.6; color:#3a4642; margin:0 0 14px;">${escapeHtml(b.desc || "")}</p>
         <div class="price" style="margin-bottom:16px;">${escapeHtml(b.price || "")}</div>
@@ -883,6 +962,22 @@
   }
 
   // ---------- explore ----------
+  // Small themed icon badge shown on cards — matches the popup theme colors.
+  function categoryIcon(category){
+    const theme = themeFor(category);
+    const bg = theme === 'ocean' ? 'var(--teal-dim)' : theme === 'festive' ? 'var(--coral-dim)' : theme === 'warm' ? '#4A362622' : 'var(--sand-2)';
+    const fg = theme === 'ocean' ? 'var(--teal)' : theme === 'festive' ? 'var(--coral)' : theme === 'warm' ? '#4A3626' : 'var(--charcoal)';
+    const icons = {
+      "Guesthouses": `<path d="M4 12 L12 5 L20 12 M6 11 V19 H18 V11" fill="none" stroke="${fg}" stroke-width="1.6" stroke-linejoin="round"/>`,
+      "Hotels & Resorts": `<rect x="5" y="6" width="14" height="13" rx="1" fill="none" stroke="${fg}" stroke-width="1.6"/><path d="M8 9 h2 M14 9 h2 M8 13 h2 M14 13 h2" stroke="${fg}" stroke-width="1.4"/>`,
+      "Cafés & Restaurants": `<path d="M6 9 h10 v5 a5 5 0 0 1 -10 0 Z" fill="none" stroke="${fg}" stroke-width="1.6"/><path d="M16 10 h2 a2 2 0 0 1 0 4 h-2" fill="none" stroke="${fg}" stroke-width="1.4"/><path d="M9 5 q1 1 0 2 M12 5 q1 1 0 2" stroke="${fg}" stroke-width="1.2" fill="none"/>`,
+      "Excursions & Dive": `<path d="M4 15 q4 3 8 0 q4 3 8 0" fill="none" stroke="${fg}" stroke-width="1.6"/><circle cx="12" cy="8" r="3" fill="none" stroke="${fg}" stroke-width="1.4"/>`,
+      "Shops & Rentals": `<path d="M6 9 h12 l-1 10 h-10 Z" fill="none" stroke="${fg}" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 9 a3 3 0 0 1 6 0" fill="none" stroke="${fg}" stroke-width="1.4"/>`,
+      "Attractions & Activities": `<path d="M12 4 L13.8 9.2 L19 9.6 L15 13 L16.3 18.2 L12 15.2 L7.7 18.2 L9 13 L5 9.6 L10.2 9.2 Z" fill="none" stroke="${fg}" stroke-width="1.3" stroke-linejoin="round"/>`
+    };
+    return `<span class="cat-icon" style="background:${bg};"><svg width="14" height="14" viewBox="0 0 24 24">${icons[category] || `<circle cx="12" cy="12" r="7" fill="none" stroke="${fg}" stroke-width="1.6"/>`}</svg></span>`;
+  }
+
   async function refreshExplore(){
     renderChips();
     renderProBanner('proBannerSlot', 'explore');
@@ -898,10 +993,10 @@
       wrap.innerHTML = `<div class="empty">${t('emptyListingsTitle')}<br>${t('emptyListingsBody')}</div>`;
       return;
     }
-    wrap.innerHTML = filtered.map(b => `
-      <div class="card" data-id="${b.id}">
+    wrap.innerHTML = filtered.map((b,i) => `
+      <div class="card" data-id="${b.id}" style="animation-delay:${Math.min(i*0.05,0.4)}s;">
         <div class="card-top">
-          <div><h3>${escapeHtml(b.name)}</h3><span class="cat">${escapeHtml(catLabel(b.category))}</span></div>
+          <div class="title-row">${categoryIcon(b.category)}<div><h3>${escapeHtml(b.name)}</h3><span class="cat">${escapeHtml(catLabel(b.category))}</span></div></div>
           ${b.verified ? '<span class="verified">Verified</span>' : ''}
         </div>
         <p class="desc">${escapeHtml(b.desc || "")}</p>
@@ -927,8 +1022,14 @@
       wrap.innerHTML = `<div class="empty">${t('emptyEventsTemplate').replace('{isl}', escapeHtml(state.island))}</div>`;
       return;
     }
-    wrap.innerHTML = filtered.map(e => `
-      <div class="card"><h3>${escapeHtml(e.title)}</h3><span class="price">${escapeHtml(e.date)}</span><p class="desc">${escapeHtml(e.desc)}</p></div>
+    wrap.innerHTML = filtered.map((e,i) => `
+      <div class="card" style="animation-delay:${Math.min(i*0.05,0.4)}s; cursor:default;">
+        <div class="title-row" style="margin-bottom:2px;">
+          <span class="cat-icon" style="background:var(--coral-dim);"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M4 6 L12 6 L8 12 Z M9 6 L17 6 L13 12 Z M14 6 L22 6 L18 12 Z" fill="none" stroke="var(--coral)" stroke-width="1.3" stroke-linejoin="round"/></svg></span>
+          <h3>${escapeHtml(e.title)}</h3>
+        </div>
+        <span class="price">${escapeHtml(e.date)}</span><p class="desc">${escapeHtml(e.desc)}</p>
+      </div>
     `).join('');
   }
 
@@ -939,7 +1040,7 @@
     const overlay = document.createElement('div');
     overlay.className = 'overlay';
     overlay.innerHTML = sheetShell({
-      eyebrow: acct.isPro ? 'Renew subscription' : 'One-time unlock', title: 'Business Pro',
+      eyebrow: acct.isPro ? 'Renew subscription' : 'One-time unlock', title: 'Business Pro', theme: 'pro',
       body: `
         <div class="price-tag">${BIZ_PRO_PRICE}<span style="font-size:14px; color:var(--charcoal); font-family:'Work Sans',sans-serif;"> / 30 days</span></div>
         <ul>
@@ -989,7 +1090,7 @@
     overlay.className = 'overlay';
     const defaultIsland = state.island || '';
     overlay.innerHTML = sheetShell({
-      closeId: 'addClose', eyebrow: 'Business Portal', title: 'Add a business',
+      closeId: 'addClose', eyebrow: 'Business Portal', title: 'Add a business', theme: 'business',
       subline: `${acct.listingCount}/${acct.listingLimit} listings used`,
       body: `
         <div class="field"><label>Business name</label><input id="f-name" placeholder="Ocean Breeze Guesthouse"></div>
@@ -1035,7 +1136,7 @@
     overlay.className = 'overlay';
     const defaultIsland = state.island || '';
     overlay.innerHTML = sheetShell({
-      closeId: 'claimClose', eyebrow: 'Business Portal', title: 'Claim your listing',
+      closeId: 'claimClose', eyebrow: 'Business Portal', title: 'Claim your listing', theme: 'business',
       subline: 'Public listings found on Google — claim yours instead of creating a duplicate',
       body: `
         <div class="field"><label>Island</label><button type="button" class="field-btn ${defaultIsland ? '' : 'placeholder'}" id="claim-island-btn" data-island="${escapeAttr(defaultIsland)}">${defaultIsland ? escapeHtml(defaultIsland) : 'Choose island…'}</button></div>
@@ -1216,11 +1317,22 @@
     setView('explore');
   }
 
-  function init(){
+  async function loadAtolls(){
+    try{
+      const res = await fetch(API_BASE + '/api/atolls');
+      if(res.ok){
+        const data = await res.json();
+        if(Array.isArray(data) && data.length) ATOLLS = data;
+      }
+    }catch(e){ /* keep the built-in fallback list */ }
+  }
+
+  async function init(){
     state.lang = lsGet('ii-lang', 'en');
     state.isPro = lsGet('ii-tourist-pro', false);
     state.bizToken = lsGet('ii-biz-token', null);
     state.bizEmail = lsGet('ii-biz-email', null);
+    await loadAtolls();
     renderBoard();
     wire();
     applyStaticText();
