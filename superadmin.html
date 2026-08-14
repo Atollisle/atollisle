@@ -287,6 +287,12 @@
     });
   }
 
+  function addressMentionsIsland(address, island){
+    if(!address) return true; // no address to check (owner-listed) — nothing to flag
+    const norm = s => s.toLowerCase().replace(/['’]/g, "");
+    return norm(address).includes(norm(island));
+  }
+
   async function loadBusinesses(){
     const r = await adminApi('/api/admin/businesses');
     const wrap = document.getElementById('businessesList');
@@ -297,23 +303,35 @@
     if(islandFilter) list = list.filter(b => b.island === islandFilter);
     if(sourceFilter) list = list.filter(b => b.source === sourceFilter);
     if(!list.length){ wrap.innerHTML = `<div class="empty">No businesses match this filter.</div>`; return; }
-    wrap.innerHTML = list.map(b => `
+    wrap.innerHTML = list.map(b => {
+      const mismatch = b.source === 'google' && !addressMentionsIsland(b.desc, b.island);
+      return `
       <div class="row-card">
         <div>
-          <h3>${escapeHtml(b.name)} <span class="badge ${b.source}">${b.source === 'google' ? 'Google' : 'Owner'}</span> ${b.verified ? '<span class="badge owner">Verified</span>' : ''}</h3>
+          <h3>${escapeHtml(b.name)} <span class="badge ${b.source}">${b.source === 'google' ? 'Google' : 'Owner'}</span> ${b.verified ? '<span class="badge owner">Verified</span>' : ''} ${mismatch ? '<span class="badge" style="background:#F5C34D33; color:#8a6d1a;">⚠ Address mismatch</span>' : ''}</h3>
           <div class="meta">${escapeHtml(b.category)} · ${escapeHtml(b.island)}${b.ownerEmail ? ' · ' + escapeHtml(b.ownerEmail) : ''}</div>
           <div class="sub">${escapeHtml(b.desc || '')}</div>
         </div>
         <div class="btns">
+          <button class="btn" data-fix="${b.id}">Fix island</button>
           <button class="btn" data-verify="${b.id}" data-current="${b.verified}">${b.verified ? 'Unverify' : 'Mark verified'}</button>
           <button class="btn danger" data-del="${b.id}">Delete</button>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
     wrap.querySelectorAll('[data-verify]').forEach(btn=>{
       btn.addEventListener('click', async ()=>{
         const current = btn.getAttribute('data-current') === 'true';
         await adminApi('/api/admin/businesses/' + btn.getAttribute('data-verify'), { method:'PATCH', body:{verified: !current} });
         loadBusinesses();
+      });
+    });
+    wrap.querySelectorAll('[data-fix]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        openIslandPicker(async (isl)=>{
+          await adminApi('/api/admin/businesses/' + btn.getAttribute('data-fix'), { method:'PATCH', body:{island: isl} });
+          loadBusinesses();
+        }, { title: 'Move to correct island' });
       });
     });
     wrap.querySelectorAll('[data-del]').forEach(btn=>{
@@ -380,14 +398,14 @@
       const statusEl = document.getElementById('syncStatus');
       statusEl.textContent = "Syncing…";
       const r = await adminApi('/api/admin/sync-google/' + encodeURIComponent(island), { method:'POST' });
-      statusEl.textContent = r.ok ? `Added ${r.data.added} new listing(s).` : r.error;
+      statusEl.textContent = r.ok ? `Added ${r.data.added} new listing(s)${r.data.skippedMismatch ? `, skipped ${r.data.skippedMismatch} that didn't actually match this island` : ''}.` : r.error;
       if(r.ok) loadBusinesses();
     });
     document.getElementById('syncAllBtn').addEventListener('click', async ()=>{
       const statusEl = document.getElementById('syncStatus');
       statusEl.textContent = "Syncing every island — this takes a bit longer…";
       const r = await adminApi('/api/admin/sync-google-all', { method:'POST' });
-      statusEl.textContent = r.ok ? `Added ${r.data.totalAdded} new listing(s) across all islands.` : r.error;
+      statusEl.textContent = r.ok ? `Added ${r.data.totalAdded} new listing(s) across all islands${r.data.totalSkippedMismatch ? `, skipped ${r.data.totalSkippedMismatch} that didn't match their island` : ''}.` : r.error;
       if(r.ok) loadBusinesses();
     });
     loadFlags();
