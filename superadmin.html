@@ -129,7 +129,7 @@
     <button class="tab" data-panel="islands">Islands</button>
   </div>
 
-  <!-- NEEDS ATTENTION (duplicate flags + address mismatches) -->
+  <!-- NEEDS ATTENTION (duplicate flags + address mismatches + unmatched sync results) -->
   <div class="panel active" id="panel-flags">
     <div class="section-heading">Duplicate Flags <span class="count" id="flagCount">0</span></div>
     <p style="font-size:13px; color:#3a4642; margin-top:0;">Raised automatically whenever a business signs up with a name that matches an existing public (Google-sourced) listing on the same island. Removing the public listing hands the page over to the real owner's listing.</p>
@@ -138,6 +138,10 @@
     <div class="section-heading" style="margin-top:26px;">Address Mismatches <span class="count" id="mismatchCount">0</span></div>
     <p style="font-size:13px; color:#3a4642; margin-top:0;">Google-sourced listings whose actual address doesn't mention the island they're filed under — usually a nearby/similar result Google matched to the wrong island during sync. Move each to the right island or remove it.</p>
     <div id="mismatchList"></div>
+
+    <div class="section-heading" style="margin-top:26px;">Unmatched Sync Results <span class="count" id="unmatchedCount">0</span></div>
+    <p style="font-size:13px; color:#3a4642; margin-top:0;">Places a sync found but skipped, because their address didn't match the island being searched at the time — not added anywhere yet. Assign each to its real island to add it as a listing, or discard it.</p>
+    <div id="unmatchedList"></div>
   </div>
 
   <!-- BUSINESSES -->
@@ -303,7 +307,8 @@
   function updateAttentionCount(){
     const flags = parseInt(document.getElementById('flagCount').textContent, 10) || 0;
     const mismatches = parseInt(document.getElementById('mismatchCount').textContent, 10) || 0;
-    document.getElementById('attentionCount').textContent = flags + mismatches;
+    const unmatched = parseInt(document.getElementById('unmatchedCount').textContent, 10) || 0;
+    document.getElementById('attentionCount').textContent = flags + mismatches + unmatched;
   }
 
   async function loadFlags(){
@@ -380,6 +385,44 @@
       btn.addEventListener('click', async ()=>{
         await adminApi('/api/admin/businesses/' + btn.getAttribute('data-del'), { method:'DELETE' });
         loadMismatches(); loadBusinesses();
+      });
+    });
+  }
+
+  // Places a sync found but never stored anywhere, because they didn't match
+  // the island being searched at the time — this is the only place they're
+  // visible; without this list they were silently discarded.
+  async function loadUnmatched(){
+    const r = await adminApi('/api/admin/unmatched');
+    const wrap = document.getElementById('unmatchedList');
+    if(!r.ok){ wrap.innerHTML = `<div class="empty">${escapeHtml(r.error)}</div>`; return; }
+    document.getElementById('unmatchedCount').textContent = r.data.length;
+    updateAttentionCount();
+    if(!r.data.length){ wrap.innerHTML = `<div class="empty">No unmatched sync results right now.</div>`; return; }
+    wrap.innerHTML = r.data.map(u => `
+      <div class="row-card">
+        <div>
+          <h3>${escapeHtml(u.name)}</h3>
+          <div class="meta">${escapeHtml(u.category)} · found while searching ${escapeHtml(u.foundSearchingIsland)}</div>
+          <div class="sub">${escapeHtml(u.desc || '')}</div>
+        </div>
+        <div class="btns">
+          <button class="btn primary" data-assign="${u.id}">Assign island</button>
+          <button class="btn danger" data-discard="${u.id}">Discard</button>
+        </div>
+      </div>`).join('');
+    wrap.querySelectorAll('[data-assign]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        openIslandPicker(async (isl)=>{
+          await adminApi('/api/admin/unmatched/' + btn.getAttribute('data-assign') + '/assign', { method:'POST', body:{island: isl} });
+          loadUnmatched(); loadBusinesses();
+        }, { title: 'Assign to island' });
+      });
+    });
+    wrap.querySelectorAll('[data-discard]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        await adminApi('/api/admin/unmatched/' + btn.getAttribute('data-discard'), { method:'DELETE' });
+        loadUnmatched();
       });
     });
   }
@@ -559,23 +602,23 @@
       const statusEl = document.getElementById('syncStatus');
       statusEl.textContent = "Syncing…";
       const r = await adminApi('/api/admin/sync-google/' + encodeURIComponent(island) + '?atoll=' + encodeURIComponent(atoll), { method:'POST' });
-      statusEl.textContent = r.ok ? `Added ${r.data.added} new listing(s)${r.data.skippedMismatch ? `, skipped ${r.data.skippedMismatch} that didn't actually match this island` : ''}.` : r.error;
-      if(r.ok){ loadBusinesses(); loadMismatches(); }
+      statusEl.textContent = r.ok ? `Added ${r.data.added} new listing(s)${r.data.skippedMismatch ? `, skipped ${r.data.skippedMismatch} that didn't actually match this island — see Needs Attention` : ''}.` : r.error;
+      if(r.ok){ loadBusinesses(); loadMismatches(); loadUnmatched(); }
     });
     document.getElementById('syncAllBtn').addEventListener('click', async ()=>{
       const statusEl = document.getElementById('syncStatus');
       statusEl.textContent = "Syncing every island — this takes a bit longer…";
       const r = await adminApi('/api/admin/sync-google-all', { method:'POST' });
-      statusEl.textContent = r.ok ? `Added ${r.data.totalAdded} new listing(s) across all islands${r.data.totalSkippedMismatch ? `, skipped ${r.data.totalSkippedMismatch} that didn't match their island` : ''}.` : r.error;
-      if(r.ok){ loadBusinesses(); loadMismatches(); }
+      statusEl.textContent = r.ok ? `Added ${r.data.totalAdded} new listing(s) across all islands${r.data.totalSkippedMismatch ? `, skipped ${r.data.totalSkippedMismatch} that didn't match their island — see Needs Attention` : ''}.` : r.error;
+      if(r.ok){ loadBusinesses(); loadMismatches(); loadUnmatched(); }
     });
     document.getElementById('clearGoogleBtn').addEventListener('click', async ()=>{
       if(!confirm('Remove every Google-sourced listing and reset the sync history? Owner-listed businesses, accounts, and events are not affected. This is meant to be followed by a fresh "Sync ALL islands" run.')) return;
       const statusEl = document.getElementById('syncStatus');
       statusEl.textContent = "Clearing previous Google data…";
       const r = await adminApi('/api/admin/google-data/clear', { method:'POST' });
-      statusEl.textContent = r.ok ? `Removed ${r.data.removed} Google-sourced listing(s) and cleared the sync cache. Ready for a fresh sync.` : r.error;
-      if(r.ok){ loadBusinesses(); loadFlags(); loadMismatches(); }
+      statusEl.textContent = r.ok ? `Removed ${r.data.removed} Google-sourced listing(s) and ${r.data.unmatchedRemoved} unmatched result(s). Ready for a fresh sync.` : r.error;
+      if(r.ok){ loadBusinesses(); loadFlags(); loadMismatches(); loadUnmatched(); }
     });
     document.getElementById('backfillContactsBtn').addEventListener('click', async ()=>{
       const statusEl = document.getElementById('syncStatus');
@@ -588,6 +631,7 @@
     });
     loadFlags();
     loadMismatches();
+    loadUnmatched();
     loadBusinesses();
     loadAccounts();
     loadIslands();
